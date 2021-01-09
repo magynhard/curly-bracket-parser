@@ -1,0 +1,147 @@
+# curly-bracket-parser
+
+```diff
+- under development (porting), no working version yet
+- first working release is planned within January 2021 
+```
+
+Javascript library (node and browser) providing a simple parser to replace curly brackets `{{like_this}}` inside strings like URLs, texts or even files (node only) easily.
+
+Additional support for build-in filters and custom filters make them more powerful. `{{example|my_filter}}`
+
+[LuckyCase](https://github.com/magynhard/lucky-case) case formats are supported as default filters by node js dependency, in browser optionally if `LuckyCase` is loaded as well.
+
+It is a port my equal ruby library [curly_bracket_parser](https://github.com/magynhard/lucky_case).
+
+
+
+
+# Contents
+
+* [Installation](#installation)
+* [Usage examples](#usage)
+* [Documentation](#documentation)
+* [Contributing](#contributing)
+
+
+
+<a name="installation"></a>
+## Installation
+
+### Option 1: node js yarn
+
+In your project root directory execute the following command:
+```bash
+yarn add curly-bracket-parser
+```
+
+### Option 2: node js npm
+
+In your project root directory execute the following command:
+```bash
+npm install curly-bracket-parser
+```
+
+### Option 3: Browser
+
+Download the `curly-bracket-parser.min.js` from the folder `dist` and
+put it in an appropriate folder, e.g. `js/lib`
+and reference it with an script tag in your project:
+```html
+<script type="text/javascript" src="js/lib/curly-bracket-parser.min.js"></script>
+```
+
+Optionally you then should add the source file to your build pipeline, if you are using webpack, brunch or any other packager.
+
+
+
+
+
+<a name="usage"></a>
+## Usage examples
+
+You can either parse variables inside strings or even directly in files.
+
+### Basic
+
+```javascript
+    const url = "https://my-domain.com/items/{{item_id}}";
+    const final_url = CurlyBracketParser.parse(url, { item_id: 123 });
+    // => "https://my-domain.com/items/123"
+```
+
+### Filters
+
+```javascript
+    const url = "https://my-domain.com/catalog/{{item_name|snake_case}}";
+    const final_url = CurlyBracketParser.parse(url, { item_name: 'MegaSuperItem' });
+    // => "https://my-domain.com/catalog/mega_super_item"
+```
+
+For a list of built-in filters visit [LuckyCase](https://github.com/magynhard/lucky-case).
+
+#### Define your custom filter
+
+```javascript
+    CurlyBracketParser.registerFilter('7times', (string) => {
+        return string + string + string + string + string + string + string;
+    })
+
+    const text = "Paul went out and screamed: A{{scream|7times}}h";
+    const final_text = CurlyBracketParser.parse(text, { scream: 'a' });
+    // => "Paul went out and screamed: Aaaaaaaah"
+```
+
+### Files
+
+<ins>test.html</ins>
+```html
+<h1>{{title|sentence_case}}</h1>
+```
+
+```javascript
+    const parsed_file = CurlyBracketParser.parseFile('./test.html', { title: 'WelcomeAtHome' });
+    // => "<h1>Welcome at home</h1>"
+```
+
+Use `.parseFileWrite` instead to write the parsed string directly into the file!
+
+As browsers are not  allowed to write to to file system, `.parseFileWrite` is only available on node and running `.parseFile`  in browser fires a `HTTP GET` request (ajax) with the given path to read the file.
+
+### Default variables
+
+You can define default variables, which will be replaced automatically without passing them by parameters, but can be overwritten with parameters.
+
+Because of providing anonymous functions, your variables can dynamically depend on other states (e.g. current date).
+
+```javascript
+    CurlyBracketParser.registerDefaultVar('version', () => {
+        return '1.0.2';  
+    });
+
+    const text = "You are running version {{version}}"
+    CurlyBracketParser.parse(text);
+    // => "You are running version 1.0.2"
+    CurlyBracketParser.parse(text, { version: '0.7.0' });
+    // => "You are running version 0.7.0"
+```
+
+
+
+
+
+
+  
+<a name="documentation"></a>    
+## Documentation
+Check out the *jsdoc* documentation [here](doc/curly-bracket-parser.jsdoc.md).
+
+
+
+
+
+<a name="contributing"></a>    
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/magynhard/curly-bracket-parser. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+
