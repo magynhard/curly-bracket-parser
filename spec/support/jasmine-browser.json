@@ -1,0 +1,16 @@
+{
+  "srcDir": "/",
+  "srcFiles": [
+    "dist/curly-bracket-parser.bundle.min.js",
+    "spec/support/xhr-mock.js"
+  ],
+  "specDir": "spec",
+  "specFiles": [
+    "**/*[Bb]rowser[Ss]pec.?(m)js"
+  ],
+  "helpers": [
+    "helpers/**/*.js"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": true
+}

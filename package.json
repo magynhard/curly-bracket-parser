@@ -1,14 +1,16 @@
 {
   "name": "curly-bracket-parser",
-  "version": "0.0.1",
-  "description": "Simple parser to replace variables inside templates/strings and files",
+  "version": "0.9.0",
+  "description": "Simple parser to replace variables inside templates/strings and files for node js and browser.",
   "exports": {
     ".": "./src/curly-bracket-parser/curly-bracket-parser.js",
     "./": "./src/curly-bracket-parser/"
   },
   "main": "src/curly-bracket-parser/curly-bracket-parser.js",
   "scripts": {
-    "test": "jasmine",
+    "test": "yarn test_browser && yarn test_node",
+    "test_node": "yarn jasmine",
+    "test_browser": "yarn build && yarn jasmine-browser-runner runSpecs --browser=chrome",
     "build": "node scripts/build.js",
     "doc": "node scripts/doc.js"
   },
@@ -17,16 +19,19 @@
     "url": "git+https://github.com/magynhard/curly-bracket-parser.git"
   },
   "dependencies": {
-    "lucky-case": "^1.1.0"
+    "lucky-case": "^1.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-es3-member-expression-literals": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "chalk": "^4.1.0",
+    "chromedriver": "^87.0.5",
     "jasmine": "^3.6.3",
+    "jasmine-browser-runner": "^0.4.0",
     "jsdoc": "^3.6.6",
     "jsdoc-to-markdown": "^6.0.1",
+    "tmp": "^0.2.1",
     "uglify-js": "^3.12.1"
   },
   "keywords": [
@@ -41,7 +46,8 @@
     "filter",
     "filters",
     "curly",
-    "brackets"
+    "brackets",
+    "browser"
   ],
   "author": "Matthäus J. N. Beyrle <curly-bracket-parser.npm@mail.magynhard.de>",
   "license": "MIT",

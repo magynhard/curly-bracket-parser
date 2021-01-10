@@ -3,599 +3,225 @@
 ## CurlyBracketParser
 CurlyBracketParser
 
-Convert and detect various letter cases in strings
+Parse variables with curly brackets within templates/strings or files
 
-* [CurlyBracketParser](#LuckyCase)
-    * [.case(string, allow_prefixed_underscores)](#LuckyCase.case) &rarr; <code>string</code> \| <code>null</code>
-    * [.cases(string, allow_prefixed_underscores)](#LuckyCase.cases) &rarr; <code>Array.&lt;string&gt;</code> \| <code>null</code>
-    * [.convertCase(string, case_type, preserve_prefixed_underscores)](#LuckyCase.convertCase) &rarr; <code>string</code>
-    * [.isValidCaseType(case_type)](#LuckyCase.isValidCaseType) &rarr; <code>boolean</code>
-    * [.isValidCaseString(string)](#LuckyCase.isValidCaseString) &rarr; <code>boolean</code>
-    * [.toUpperCase(string)](#LuckyCase.toUpperCase) &rarr; <code>string</code>
-    * [.isUpperCase(string)](#LuckyCase.isUpperCase) &rarr; <code>boolean</code>
-    * [.toLowerCase(string)](#LuckyCase.toLowerCase) &rarr; <code>string</code>
-    * [.isLowerCase(string)](#LuckyCase.isLowerCase) &rarr; <code>boolean</code>
-    * [.toSnakeCase(string, preserve_prefixed_underscores)](#LuckyCase.toSnakeCase) &rarr; <code>string</code>
-    * [.isSnakeCase(string, allow_prefixed_underscores)](#LuckyCase.isSnakeCase) &rarr; <code>boolean</code>
-    * [.toUpperSnakeCase(string, preserve_prefixed_underscores)](#LuckyCase.toUpperSnakeCase) &rarr; <code>string</code>
-    * [.isUpperSnakeCase(string, allow_prefixed_underscores)](#LuckyCase.isUpperSnakeCase) &rarr; <code>boolean</code>
-    * [.toPascalCase(string, preserve_prefixed_underscores)](#LuckyCase.toPascalCase) &rarr; <code>string</code>
-    * [.isPascalCase(string, allow_prefixed_underscores)](#LuckyCase.isPascalCase) &rarr; <code>boolean</code>
-    * [.toCamelCase(string, preserve_prefixed_underscores)](#LuckyCase.toCamelCase) &rarr; <code>string</code>
-    * [.isCamelCase(string, allow_prefixed_underscores)](#LuckyCase.isCamelCase) &rarr; <code>boolean</code>
-    * [.toDashCase(string, preserve_prefixed_underscores)](#LuckyCase.toDashCase) &rarr; <code>string</code>
-    * [.isDashCase(string, allow_prefixed_underscores)](#LuckyCase.isDashCase) &rarr; <code>boolean</code>
-    * [.toUpperDashCase(string, preserve_prefixed_underscores)](#LuckyCase.toUpperDashCase) &rarr; <code>string</code>
-    * [.isUpperDashCase(string, allow_prefixed_underscores)](#LuckyCase.isUpperDashCase) &rarr; <code>boolean</code>
-    * [.toTrainCase(string, preserve_prefixed_underscores)](#LuckyCase.toTrainCase) &rarr; <code>string</code>
-    * [.isTrainCase(string, allow_prefixed_underscores)](#LuckyCase.isTrainCase) &rarr; <code>boolean</code>
-    * [.toWordCase(string, preserve_prefixed_underscores)](#LuckyCase.toWordCase) &rarr; <code>string</code>
-    * [.isWordCase(string, allow_prefixed_underscores)](#LuckyCase.isWordCase) &rarr; <code>boolean</code>
-    * [.toUpperWordCase(string, preserve_prefixed_underscores)](#LuckyCase.toUpperWordCase) &rarr; <code>string</code>
-    * [.isUpperWordCase(string, allow_prefixed_underscores)](#LuckyCase.isUpperWordCase) &rarr; <code>boolean</code>
-    * [.toCapitalWordCase(string, preserve_prefixed_underscores)](#LuckyCase.toCapitalWordCase) &rarr; <code>string</code>
-    * [.isCapitalWordCase(string, allow_prefixed_underscores)](#LuckyCase.isCapitalWordCase) &rarr; <code>boolean</code>
-    * [.toSentenceCase(string, preserve_prefixed_underscores)](#LuckyCase.toSentenceCase) &rarr; <code>string</code>
-    * [.isSentenceCase(string, allow_prefixed_underscores)](#LuckyCase.isSentenceCase) &rarr; <code>boolean</code>
-    * [.toCapital(string, skip_prefixed_underscores)](#LuckyCase.toCapital) &rarr; <code>string</code>
-    * [.capitalize(string, skip_prefixed_underscores)](#LuckyCase.capitalize) &rarr; <code>string</code>
-    * [.isCapital(string, skip_prefixed_underscores)](#LuckyCase.isCapital) &rarr; <code>boolean</code>
-    * [.isCapitalized(string, skip_prefixed_underscores)](#LuckyCase.isCapitalized) &rarr; <code>boolean</code>
-    * [.toMixedCase(string, preserve_prefixed_underscores)](#LuckyCase.toMixedCase) &rarr; <code>string</code>
-    * [.isMixedCase(string, allow_prefixed_underscores)](#LuckyCase.isMixedCase) &rarr; <code>boolean</code>
-    * [.swapCase(string, preserve_prefixed_underscores)](#LuckyCase.swapCase) &rarr; <code>string</code>
-    * [.constantize(string)](#LuckyCase.constantize) &rarr; <code>any</code>
-    * [.deconstantize(constant, case_type)](#LuckyCase.deconstantize) &rarr; <code>string</code>
-    * [.cutUnderscoresAtStart(string)](#LuckyCase.cutUnderscoresAtStart) &rarr; <code>string</code>
-    * [.getUnderscoresAtStart(string)](#LuckyCase.getUnderscoresAtStart) &rarr; <code>string</code>
-    * [.splitCaseString(string)](#LuckyCase.splitCaseString) &rarr; <code>Array.&lt;string&gt;</code>
+Use filters for special cases
 
-<a name="CurlyBracketParser.case"></a>
+* [CurlyBracketParser](#CurlyBracketParser)
+    * [.parse(string, variables, options)](#CurlyBracketParser.parse) &rarr; <code>string</code>
+    * [.parseFile(path, variables, options)](#CurlyBracketParser.parseFile) &rarr; <code>string</code> \| <code>null</code>
+    * [.parseFileWrite(path, variables, options)](#CurlyBracketParser.parseFileWrite) &rarr; <code>string</code> \| <code>null</code>
+    * [.registerFilter(name, filter_function, options)](#CurlyBracketParser.registerFilter)
+    * [.processFilter(name, value)](#CurlyBracketParser.processFilter) &rarr; <code>string</code>
+    * [.validFilters()](#CurlyBracketParser.validFilters) &rarr; <code>Array.&lt;string&gt;</code>
+    * [.isValidFilter(name)](#CurlyBracketParser.isValidFilter) &rarr; <code>boolean</code>
+    * [.registerDefaultVar(name, var_function, options)](#CurlyBracketParser.registerDefaultVar) &rarr; <code>function</code>
+    * [.processDefaultVar(name)](#CurlyBracketParser.processDefaultVar) &rarr; <code>string</code>
+    * [.unregisterDefaultVar(name)](#CurlyBracketParser.unregisterDefaultVar) &rarr; <code>boolean</code>
+    * [.registeredDefaultVars()](#CurlyBracketParser.registeredDefaultVars) &rarr; <code>Array.&lt;string&gt;</code>
+    * [.isRegisteredDefaultVar(name)](#CurlyBracketParser.isRegisteredDefaultVar) &rarr; <code>boolean</code>
+    * [.decodeVariable(variable)](#CurlyBracketParser.decodeVariable) &rarr; <code>Object</code>
+    * [.decodedVariables(string)](#CurlyBracketParser.decodedVariables) &rarr; <code>Array.&lt;Object&gt;</code>
+    * [.variables(string)](#CurlyBracketParser.variables) &rarr; <code>Array.&lt;string&gt;</code>
+    * [.isAnyVariableIncluded(string)](#CurlyBracketParser.isAnyVariableIncluded) &rarr; <code>boolean</code>
+    * [.includesOneVariableOf(variable_names, string)](#CurlyBracketParser.includesOneVariableOf) &rarr; <code>boolean</code>
 
-### CurlyBracketParser.case(string, allow_prefixed_underscores) &rarr; <code>string</code> \| <code>null</code>
-Get type of case of string (one key of CurlyBracketParser.CASES)
+<a name="CurlyBracketParser.parse"></a>
 
-If more than one case matches, the first match wins.
-Match prio is the order of the regex in CurlyBracketParser.CASES
-
-If you want or need to know all cases, use plural version of this method
-
-If you want to check explicitly for one case, use its check method,
-e.g. isSnakeCase() for SNAKE_CASE, etc...
-**Returns**: <code>string</code> \| <code>null</code> - symbol of type, null if no match  
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> | 
-
-<a name="CurlyBracketParser.cases"></a>
-
-### CurlyBracketParser.cases(string, allow_prefixed_underscores) &rarr; <code>Array.&lt;string&gt;</code> \| <code>null</code>
-Get types of cases of string (keys of CurlyBracketParser.CASES)
-**Returns**: <code>Array.&lt;string&gt;</code> \| <code>null</code> - symbols of types, null if no one matches  
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> | 
-
-<a name="CurlyBracketParser.convertCase"></a>
-
-### CurlyBracketParser.convertCase(string, case_type, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert a string into the given case type
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| case_type | <code>string</code> |  |  |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.isValidCaseType"></a>
-
-### CurlyBracketParser.isValidCaseType(case_type) &rarr; <code>boolean</code>
-Check if given case type is a valid case type
+### CurlyBracketParser.parse(string, variables, options) &rarr; <code>string</code>
+Parse given string and replace the included variables by the given variables
+**Returns**: <code>string</code> - parsed string  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| case_type | <code>string</code> | to check |
+| string | <code>string</code> |  |
+| variables | <code>object.&lt;string, string&gt;</code> | <key <-> value> |
+| options | <code>object</code> |  |
+| options.unresolved_vars | <code>&#x27;throw&#x27;</code> \| <code>&#x27;keep&#x27;</code> \| <code>&#x27;replace&#x27;</code> | 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found. |
+| options.replace_pattern | <code>string</code> | pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables. |
 
-<a name="CurlyBracketParser.isValidCaseString"></a>
+<a name="CurlyBracketParser.parseFile"></a>
 
-### CurlyBracketParser.isValidCaseString(string) &rarr; <code>boolean</code>
-Check if the string matches any of the available cases
-
-| Param | Type | Description |
-| --- | --- | --- |
-| string | <code>string</code> | to check |
-
-<a name="CurlyBracketParser.toUpperCase"></a>
-
-### CurlyBracketParser.toUpperCase(string) &rarr; <code>string</code>
-Convert all characters inside the string
-into upper case
+### CurlyBracketParser.parseFile(path, variables, options) &rarr; <code>string</code> \| <code>null</code>
+Parse given path content and replace the included variables by the given variables
+**Returns**: <code>string</code> \| <code>null</code> - parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| string | <code>string</code> | to convert |
+| path | <code>string</code> | to file to parse |
+| variables | <code>object.&lt;string, string&gt;</code> | <key <-> value> |
+| options | <code>object</code> |  |
+| options.unresolved_vars | <code>&#x27;throw&#x27;</code> \| <code>&#x27;keep&#x27;</code> \| <code>&#x27;replace&#x27;</code> | 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found. |
+| options.replace_pattern | <code>string</code> | pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables. |
+| options.success | <code>function</code> | only affects when running inside a browser. If given, the file of the given path will be requested asynchronous and the parsed string will be passed to this function. |
+| options.write | <code>boolean</code> | write parsed content of the file directly into the file. Only available when running by node js. |
 
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'THIS-ISANEXAMPLE_STRING'
-```
-<a name="CurlyBracketParser.isUpperCase"></a>
+<a name="CurlyBracketParser.parseFileWrite"></a>
 
-### CurlyBracketParser.isUpperCase(string) &rarr; <code>boolean</code>
-Check if all characters inside the string are upper case
+### CurlyBracketParser.parseFileWrite(path, variables, options) &rarr; <code>string</code> \| <code>null</code>
+Parse given path content and replace the included variables by the given variables
+Alias method of .parseFile with option write: true
 
-| Param | Type | Description |
-| --- | --- | --- |
-| string | <code>string</code> | to check |
-
-<a name="CurlyBracketParser.toLowerCase"></a>
-
-### CurlyBracketParser.toLowerCase(string) &rarr; <code>string</code>
-Convert all characters inside the string
-into lower case
+Only available when running on node js (not in browser)
+**Returns**: <code>string</code> \| <code>null</code> - parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| string | <code>string</code> | to convert |
+| path | <code>string</code> | to file to parse |
+| variables | <code>object.&lt;string, string&gt;</code> | <key <-> value> |
+| options | <code>object</code> |  |
+| options.unresolved_vars | <code>&#x27;throw&#x27;</code> \| <code>&#x27;keep&#x27;</code> \| <code>&#x27;replace&#x27;</code> | 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found. |
+| options.replace_pattern | <code>string</code> | pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables. |
 
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'this-isanexample_string'
-```
-<a name="CurlyBracketParser.isLowerCase"></a>
+<a name="CurlyBracketParser.registerFilter"></a>
 
-### CurlyBracketParser.isLowerCase(string) &rarr; <code>boolean</code>
-Check if all characters inside the string are lower case
+### CurlyBracketParser.registerFilter(name, filter_function, options)
+Register your custom filter to the filter list
+**Throws**:
+
+- <code>FilterAlreadyRegisteredError</code> if filter does already exist
+
 
 | Param | Type | Description |
 | --- | --- | --- |
-| string | <code>string</code> | to check |
+| name | <code>string</code> |  |
+| filter_function | <code>function</code> |  |
+| options | <code>Object</code> |  |
+| options.raise_on_exist | <code>boolean</code> | raise exception if filter does already exist, default: true |
 
-<a name="CurlyBracketParser.toSnakeCase"></a>
+<a name="CurlyBracketParser.processFilter"></a>
 
-### CurlyBracketParser.toSnakeCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into snake case
+### CurlyBracketParser.processFilter(name, value) &rarr; <code>string</code>
+Process the given value with the given filter
+**Returns**: <code>string</code> - converted string with applied filter  
+**Throws**:
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
+- <code>InvalidFilterError</code> if the given filter name is invalid
 
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'this_is_an_example_string'
-```
-<a name="CurlyBracketParser.isSnakeCase"></a>
 
-### CurlyBracketParser.isSnakeCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is snake case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toUpperSnakeCase"></a>
-
-### CurlyBracketParser.toUpperSnakeCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into upper snake case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'THIS_IS_AN_EXAMPLE_STRING'
-```
-<a name="CurlyBracketParser.isUpperSnakeCase"></a>
-
-### CurlyBracketParser.isUpperSnakeCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is upper snake case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toPascalCase"></a>
-
-### CurlyBracketParser.toPascalCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into pascal case
-
-| Param | Default | Description |
+| Param | Type | Description |
 | --- | --- | --- |
-| string |  | to convert |
-| preserve_prefixed_underscores | <code>true</code> |  |
+| name | <code>string</code> | of the filter to apply on the value, e.g. {{var_name|my_filter_name}} |
+| value | <code>string</code> | string to apply the specified filter on |
 
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'ThisIsAnExampleString'
-```
-<a name="CurlyBracketParser.isPascalCase"></a>
+<a name="CurlyBracketParser.validFilters"></a>
 
-### CurlyBracketParser.isPascalCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is upper pascal case
+### CurlyBracketParser.validFilters() &rarr; <code>Array.&lt;string&gt;</code>
+Retrieve array with valid filters
+<a name="CurlyBracketParser.isValidFilter"></a>
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toCamelCase"></a>
-
-### CurlyBracketParser.toCamelCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into camel case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'thisIsAnExampleString'
-```
-<a name="CurlyBracketParser.isCamelCase"></a>
-
-### CurlyBracketParser.isCamelCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is camel case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toDashCase"></a>
-
-### CurlyBracketParser.toDashCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into dash case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'this-is-an-example-string'
-```
-<a name="CurlyBracketParser.isDashCase"></a>
-
-### CurlyBracketParser.isDashCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is dash case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toUpperDashCase"></a>
-
-### CurlyBracketParser.toUpperDashCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into upper dash case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'THIS-IS-AN-EXAMPLE-STRING'
-```
-<a name="CurlyBracketParser.isUpperDashCase"></a>
-
-### CurlyBracketParser.isUpperDashCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is upper dash case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toTrainCase"></a>
-
-### CurlyBracketParser.toTrainCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into train case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'This-Is-An-Example-String'
-```
-<a name="CurlyBracketParser.isTrainCase"></a>
-
-### CurlyBracketParser.isTrainCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is train case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toWordCase"></a>
-
-### CurlyBracketParser.toWordCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into word case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'this is an example string'
-```
-<a name="CurlyBracketParser.isWordCase"></a>
-
-### CurlyBracketParser.isWordCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is word case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores |  | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toUpperWordCase"></a>
-
-### CurlyBracketParser.toUpperWordCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into upper word case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'THIS IS AN EXAMPLE STRING'
-```
-<a name="CurlyBracketParser.isUpperWordCase"></a>
-
-### CurlyBracketParser.isUpperWordCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is upper word case
-
-| Param | Default | Description |
-| --- | --- | --- |
-| string |  | to check |
-| allow_prefixed_underscores | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toCapitalWordCase"></a>
-
-### CurlyBracketParser.toCapitalWordCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into capital word case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'This Is An Example String'
-```
-<a name="CurlyBracketParser.isCapitalWordCase"></a>
-
-### CurlyBracketParser.isCapitalWordCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is capital word case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toSentenceCase"></a>
-
-### CurlyBracketParser.toSentenceCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into sentence case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'This is an example string'
-```
-<a name="CurlyBracketParser.isSentenceCase"></a>
-
-### CurlyBracketParser.isSentenceCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is sentence case
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to check |
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> |  |
-
-<a name="CurlyBracketParser.toCapital"></a>
-
-### CurlyBracketParser.toCapital(string, skip_prefixed_underscores) &rarr; <code>string</code>
-Convert the first character to capital
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| skip_prefixed_underscores | <code>boolean</code> | <code>false</code> |  |
-
-<a name="CurlyBracketParser.capitalize"></a>
-
-### CurlyBracketParser.capitalize(string, skip_prefixed_underscores) &rarr; <code>string</code>
-Convert the first character to capital
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| string | <code>string</code> |  | to convert |
-| skip_prefixed_underscores | <code>boolean</code> | <code>false</code> |  |
-
-<a name="CurlyBracketParser.isCapital"></a>
-
-### CurlyBracketParser.isCapital(string, skip_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the strings first character is a capital letter
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| skip_prefixed_underscores | <code>boolean</code> | <code>false</code> | 
-
-<a name="CurlyBracketParser.isCapitalized"></a>
-
-### CurlyBracketParser.isCapitalized(string, skip_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the strings first character is a capital letter
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| skip_prefixed_underscores | <code>boolean</code> | <code>false</code> | 
-
-<a name="CurlyBracketParser.toMixedCase"></a>
-
-### CurlyBracketParser.toMixedCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Convert the given string from any case
-into mixed case.
-
-The new string is ensured to be different from the input.
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| preserve_prefixed_underscores | <code>boolean</code> | <code>true</code> | 
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'This-Is_anExample-string'
-```
-<a name="CurlyBracketParser.isMixedCase"></a>
-
-### CurlyBracketParser.isMixedCase(string, allow_prefixed_underscores) &rarr; <code>boolean</code>
-Check if the string is a valid mixed case (without special characters!)
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| allow_prefixed_underscores | <code>boolean</code> | <code>true</code> | 
-
-<a name="CurlyBracketParser.swapCase"></a>
-
-### CurlyBracketParser.swapCase(string, preserve_prefixed_underscores) &rarr; <code>string</code>
-Swaps character cases in string
-
-lower case to upper case
-upper case to lower case
-dash to underscore
-underscore to dash
-
-| Param | Type | Default |
-| --- | --- | --- |
-| string | <code>string</code> |  | 
-| preserve_prefixed_underscores | <code>boolean</code> | <code>false</code> | 
-
-**Example**  
-```js
-conversion
-     'this-isAnExample_string' => 'THIS_ISaNeXAMPLE-STRING'
-```
-<a name="CurlyBracketParser.constantize"></a>
-
-### CurlyBracketParser.constantize(string) &rarr; <code>any</code>
-Convert the string from any case
-into pascal case and casts it into a constant
-
-Does not work in all node js contexts because of scopes, where the constant is not available here.
-Then you might use eval(CurlyBracketParser.toPascalCase) instead.
-Or you may use it with global defined variables, global.<variable_name>
+### CurlyBracketParser.isValidFilter(name) &rarr; <code>boolean</code>
+Check if a given filter is valid
+**Returns**: <code>boolean</code> - true if filter exists, otherwise false  
 
 | Param | Type |
 | --- | --- |
-| string | <code>string</code> | 
+| name | <code>string</code> | 
+
+<a name="CurlyBracketParser.registerDefaultVar"></a>
+
+### CurlyBracketParser.registerDefaultVar(name, var_function, options) &rarr; <code>function</code>
+Register a default variable to be replaced automatically by the given block value in future
+If the variable exists already, it will throw an VariableAlreadyRegisteredError
+**Returns**: <code>function</code> - var_function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | of the default var |
+| var_function | <code>function</code> | function returning the variable value |
+| options | <code>Object</code> |  |
+| options.overwrite | <code>boolean</code> | explicitly overwrite an existing default var without throwing an execption |
+
+<a name="CurlyBracketParser.processDefaultVar"></a>
+
+### CurlyBracketParser.processDefaultVar(name) &rarr; <code>string</code>
+Return the given default variable by returning the result of its function
+**Returns**: <code>string</code> - the result of the given default variable function  
+
+| Param | Type |
+| --- | --- |
+| name | <code>string</code> | 
+
+<a name="CurlyBracketParser.unregisterDefaultVar"></a>
+
+### CurlyBracketParser.unregisterDefaultVar(name) &rarr; <code>boolean</code>
+Unregister / remove an existing default variable
+**Returns**: <code>boolean</code> - true if variable existed and was unregistered, false if it didn't exist  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | of the variable |
+
+<a name="CurlyBracketParser.registeredDefaultVars"></a>
+
+### CurlyBracketParser.registeredDefaultVars() &rarr; <code>Array.&lt;string&gt;</code>
+Return an array of registered default variables
+<a name="CurlyBracketParser.isRegisteredDefaultVar"></a>
+
+### CurlyBracketParser.isRegisteredDefaultVar(name) &rarr; <code>boolean</code>
+Check if the given variable is a registered default variable
+**Returns**: <code>boolean</code> - true if variable is registered, otherwise false  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | of the variable |
+
+<a name="CurlyBracketParser.decodeVariable"></a>
+
+### CurlyBracketParser.decodeVariable(variable) &rarr; <code>Object</code>
+Return a object containing separated name and filter of a variable
+**Returns**: <code>Object</code> - name, filter  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| variable | <code>string</code> | string to scan |
 
 **Example**  
 ```js
-conversion
-     'this-isAnExample_string' => ThisIsAnExampleString
-     'this/is_an/example_path' => ThisIsAnExamplePath
+#   '{{var_name|filter_name}}' => { name: 'var_name', filter: 'filter_name' }
 ```
-<a name="CurlyBracketParser.deconstantize"></a>
+<a name="CurlyBracketParser.decodedVariables"></a>
 
-### CurlyBracketParser.deconstantize(constant, case_type) &rarr; <code>string</code>
-Deconverts the constant back into specified target type
+### CurlyBracketParser.decodedVariables(string) &rarr; <code>Array.&lt;Object&gt;</code>
+Scans the given url for variables with pattern '{{var|optional_filter}}'
+**Returns**: <code>Array.&lt;Object&gt;</code> - array of variable names and its filters  
 
-Does not work in special scopes in node js
-
-| Param | Type |
-| --- | --- |
-| constant | <code>function</code> | 
-| case_type | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | to scan |
 
 **Example**  
 ```js
-deconversion
-     ThisAweSomeConstant => 'thisAweSomeConstant'
-     function myFunction() {} => 'myFunction'
+#   'The variable {{my_var|my_filter}} is inside this string' => [{ name: "my_var", filter: "my_filter"}]
 ```
-<a name="CurlyBracketParser.cutUnderscoresAtStart"></a>
+<a name="CurlyBracketParser.variables"></a>
 
-### CurlyBracketParser.cutUnderscoresAtStart(string) &rarr; <code>string</code>
-Return string without underscores at the start
-**Returns**: <code>string</code> - string without prefixed underscores  
+### CurlyBracketParser.variables(string) &rarr; <code>Array.&lt;string&gt;</code>
+Scans the given url for variables with pattern '{{var|optional_filter}}'
+**Returns**: <code>Array.&lt;string&gt;</code> - array of variable names and its filters  
 
-| Param | Type |
-| --- | --- |
-| string | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | to scan |
 
-<a name="CurlyBracketParser.getUnderscoresAtStart"></a>
+<a name="CurlyBracketParser.isAnyVariableIncluded"></a>
 
-### CurlyBracketParser.getUnderscoresAtStart(string) &rarr; <code>string</code>
-Return the underscores at the start of the string
-**Returns**: <code>string</code> - string of underscores or empty if none found  
+### CurlyBracketParser.isAnyVariableIncluded(string) &rarr; <code>boolean</code>
+Check if any variable is included in the given string
+**Returns**: <code>boolean</code> - true if any variable is included in the given string, otherwise false  
 
-| Param | Type |
-| --- | --- |
-| string | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | name of variable to check for |
 
-<a name="CurlyBracketParser.splitCaseString"></a>
+<a name="CurlyBracketParser.includesOneVariableOf"></a>
 
-### CurlyBracketParser.splitCaseString(string) &rarr; <code>Array.&lt;string&gt;</code>
-Split the string into parts
-It is splitted by all (different) case separators
+### CurlyBracketParser.includesOneVariableOf(variable_names, string) &rarr; <code>boolean</code>
+Check if one of the given variable names is included in the given string
+**Returns**: <code>boolean</code> - true if one given variable name is included in given the string, otherwise false  
 
-| Param | Type |
-| --- | --- |
-| string | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| variable_names |  |  |
+| string | <code>string</code> | name of variable to check for |
 

@@ -1,5 +1,5 @@
 //<!-- MODULE -->//
-if (typeof require === 'function') {
+if (typeof require === 'function' && typeof module !== 'undefined' && module.exports) {
     var FileNotRetrievedError = require('./custom-errors/file-not-retrieved-error.js');
     var FilterAlreadyRegisteredError = require('./custom-errors/filter-already-registered-error.js');
     var InvalidFilterError = require('./custom-errors/invalid-filter-error.js');
@@ -7,6 +7,7 @@ if (typeof require === 'function') {
     var UnresolvedVariablesError = require('./custom-errors/unresolved-variables-error.js');
     var VariableAlreadyRegisteredError = require('./custom-errors/variable-already-registered-error.js');
     var LuckyCase = require('lucky-case');
+    console.log("modules required");
 }
 //<!-- /MODULE -->//
 /**
@@ -67,7 +68,7 @@ class CurlyBracketParser {
                     }
                     break;
                 case "replace":
-                    result_string = result_string.replaceAll(self.VARIABLE_DECODER_REGEX, options.replace_pattern);
+                    result_string = result_string.replace(self.VARIABLE_DECODER_REGEX, options.replace_pattern);
                     break;
             }
         }
@@ -97,6 +98,7 @@ class CurlyBracketParser {
         options = Object.assign(default_options, options);
         variables = variables || {};
         if(self._runByNode()) {
+            const fs = require("fs");
             const file_content = fs.readFileSync(path, 'utf-8').toString();
             const parsed_content = self.parse(file_content, variables, options);
             if(options.write) {
@@ -202,7 +204,7 @@ class CurlyBracketParser {
     static registerFilter(name, filter_function, options = { raise_on_exist: true}) {
         const self = CurlyBracketParser;
         if(self.isValidFilter(name)) {
-            throw new FilterAlreadyRegisteredError(`The given filter name '${filter}' is already registered`);
+            throw new FilterAlreadyRegisteredError(`The given filter name '${name}' is already registered`);
         } else {
             if(typeof filter_function === 'function') {
                 self.registered_filters[name] = filter_function;
@@ -226,11 +228,14 @@ class CurlyBracketParser {
         const self = CurlyBracketParser;
         if(self.registered_filters[name]) {
             return self.registered_filters[name](value);
-        } else if(self.VALID_DEFAULT_FILTERS().includes(name) && LuckyCase.isValidCaseType(name)) {
-            return LuckyCase.convertCase(value, name);
+        } else if(typeof LuckyCase !== 'undefined' && self.VALID_DEFAULT_FILTERS().includes(LuckyCase.toUpperCase(name)) && LuckyCase.isValidCaseType(LuckyCase.toUpperCase(name))) {
+            return LuckyCase.convertCase(value, LuckyCase.toUpperCase(name));
         } else {
             const error_message = `Invalid filter '${name}'. Valid filters are: ${self.validFilters().join(' ')}`;
             throw new InvalidFilterError(error_message);
+        }
+        if(typeof LuckyCase !== 'undefined') {
+            console.warn(`CurlyBracketParser: 'LuckyCase' is not defined. If you add LuckyCase, you can use all of its case transformers as filters!`);
         }
     }
 
@@ -243,7 +248,10 @@ class CurlyBracketParser {
      */
     static validFilters() {
         const self = CurlyBracketParser;
-        return self.VALID_DEFAULT_FILTERS().concat(Object.keys(self.registered_filters));
+        const default_filters = self.VALID_DEFAULT_FILTERS();
+        const registered_filters = Object.keys(self.registered_filters);
+        const default_filters_lower_case = self.VALID_DEFAULT_FILTERS().map((e) => { return e.toLocaleLowerCase();});
+        return default_filters.concat(registered_filters).concat(default_filters_lower_case);
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -265,10 +273,11 @@ class CurlyBracketParser {
      * Register a default variable to be replaced automatically by the given block value in future
      * If the variable exists already, it will throw an VariableAlreadyRegisteredError
      *
-     * @param name
-     * @param var_function
-     * @param options
-     * @returns {*}
+     * @param {string} name of the default var
+     * @param {function} var_function function returning the variable value
+     * @param {Object} options
+     * @param {boolean} options.overwrite explicitly overwrite an existing default var without throwing an execption
+     * @returns {function} var_function
      */
     static registerDefaultVar(name, var_function, options = { overwrite: false }) {
         const self = CurlyBracketParser;
@@ -461,8 +470,8 @@ CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
 
 // constants for formats
-CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]+)\|?([^{}\|]*)}}/g;
-CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]+}}/g;
+CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]+)\|?([^{}\|]*)}}/gsm;
+CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]+}}/gsm;
 CurlyBracketParser.VALID_DEFAULT_FILTERS = () => {
     if(typeof LuckyCase !== 'undefined') {
         return Object.keys(LuckyCase.CASES);

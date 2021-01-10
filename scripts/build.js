@@ -6,8 +6,10 @@ const util = require('util');
 const exec = require("child_process").exec;
 const exec_prom = util.promisify(exec);
 const { spawn } = require("child_process");
-const LuckyCase = require('./../src/curly-bracket-parser/curly-bracket-parser');
+const LuckyCase = require('lucky-case');
 const chalk = require('chalk');
+
+const CurlyBracketParser = require('./../src/curly-bracket-parser/curly-bracket-parser');
 
 const build_destination_dir = './dist/';
 
@@ -35,11 +37,27 @@ const builds = {
     default_build: {
         destination_file: build_destination_dir + 'curly-bracket-parser.js',
         destination_min_file: build_destination_dir + 'curly-bracket-parser.min.js',
-        options: { babelize: false, uglify: false },
         source_files: [
             './src/curly-bracket-parser/curly-bracket-parser.js',
-            './src/curly-bracket-parser/custom-errors/unresolved-variables-error.js',
+            './src/curly-bracket-parser/custom-errors/file-not-retrieved-error.js',
+            './src/curly-bracket-parser/custom-errors/filter-already-registered-error.js',
             './src/curly-bracket-parser/custom-errors/invalid-filter-error.js',
+            './src/curly-bracket-parser/custom-errors/invalid-variable-error.js',
+            './src/curly-bracket-parser/custom-errors/unresolved-variables-error.js',
+            './src/curly-bracket-parser/custom-errors/variable-already-registered-error.js',
+    ]},
+    bundle_build: {
+        destination_file: build_destination_dir + 'curly-bracket-parser.bundle.js',
+        destination_min_file: build_destination_dir + 'curly-bracket-parser.bundle.min.js',
+        source_files: [
+            './src/curly-bracket-parser/curly-bracket-parser.js',
+            './src/curly-bracket-parser/custom-errors/file-not-retrieved-error.js',
+            './src/curly-bracket-parser/custom-errors/filter-already-registered-error.js',
+            './src/curly-bracket-parser/custom-errors/invalid-filter-error.js',
+            './src/curly-bracket-parser/custom-errors/invalid-variable-error.js',
+            './src/curly-bracket-parser/custom-errors/unresolved-variables-error.js',
+            './src/curly-bracket-parser/custom-errors/variable-already-registered-error.js',
+            './node_modules/lucky-case/dist/lucky-case.js',
     ]}
 }
 
@@ -80,8 +98,9 @@ for(let build_key of Object.keys(builds)) {
         fs.writeFileSync(build.destination_file, releaseTemplate() + final_file);
     })();
     (async function createMinifiedBuilds() {
-        const babel_command = `babel ${build.destination_min_file} --no-comments --out-file ${build.destination_min_file}`;
+        const babel_command = `babel ${build.destination_file} --no-comments --out-file ${build.destination_min_file}`;
         const uglify_command = `uglifyjs ${build.destination_min_file} -m -c -o ${build.destination_min_file}`;
+        console.log(babel_command + ' && ' + uglify_command);
         await exec_prom(babel_command + ' && ' + uglify_command).then(() => {
             prependToFile(build.destination_min_file, releaseTemplate());
         });
