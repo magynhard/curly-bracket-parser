@@ -1,10 +1,5 @@
 # curly-bracket-parser
 
-```diff
-- under development (porting), no working version yet
-- first working release is planned within January 2021 
-```
-
 Javascript library providing a simple parser to replace curly brackets `{{like_this}}` inside strings like URLs, texts or even files (node only) easily. Available for node js and browser!
 
 Additional support for build-in filters and custom filters make them more powerful. `{{example|my_filter}}`
