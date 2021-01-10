@@ -43,20 +43,20 @@ class CurlyBracketParser {
                     const decoded_var = self.decodeVariable(string_var);
                     const name = decoded_var.name;
                     const filter = decoded_var.filter;
-                    let value = nil;
+                    let value = null;
                     if(variables[name]) {
                         if(filter) {
                             value = self.processFilter(filter, variables[name]);
                         } else {
                             value = variables[name];
                         }
-                        result_string = result_string.replaceAll(string_var, value);
+                        result_string = self._replaceAll(result_string, string_var, value);
                     } else if(self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
-                        result_string = result_string.replaceAll(string_var, value);
+                        result_string = self._replaceAll(result_string, string_var, value);
                     }
                 }
-                if(!(self.isAnyVariableIncluded(string) && self.includesOneVariableOf(variables, string))) {
+                if(!(self.isAnyVariableIncluded(result_string) && self.includesOneVariableOf(Object.keys(variables), result_string))) {
                     break;
                 }
             }
@@ -347,21 +347,23 @@ class CurlyBracketParser {
      */
     static isRegisteredDefaultVar(name) {
         const self = CurlyBracketParser;
-        return self.registerDefaultVar().includes(name);
+        return self.registeredDefaultVars().includes(name);
     }
 
     //----------------------------------------------------------------------------------------------------
 
     /**
-     * Scans the given url for variables with pattern '{{var|optional_filter}}'
+     * Return a object containing separated name and filter of a variable
+     *
+     * @example
+     #   '{{var_name|filter_name}}' => { name: 'var_name', filter: 'filter_name' }
      *
      * @param {string} variable string to scan
-     * @returns {Array<Object<string, string>>}
+     * @returns {Object} name, filter
      */
     static decodeVariable(variable) {
         const self = CurlyBracketParser;
-        const vals = self.decodedVariables(variable)[0];
-        return [Object.keys(vals)[0], Object.values(vals)[0]];
+        return self.decodedVariables(variable)[0];
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -369,14 +371,27 @@ class CurlyBracketParser {
     /**
      * Scans the given url for variables with pattern '{{var|optional_filter}}'
      *
+     * @example
+     #   'The variable {{my_var|my_filter}} is inside this string' => [{ name: "my_var", filter: "my_filter"}]
+     *
      * @param {string} string to scan
-     * @returns {Array<Object<string,string>>} array of variable names and its filters
+     * @returns {Array<Object>} array of variable names and its filters
      */
     static decodedVariables(string) {
         const self = CurlyBracketParser;
-        const var_name_index = 0;
-        const var_filter_index = 1;
-        return string.match(self.VARIABLE_DECODER_REGEX).map((e) => { const key = "" + e[var_name_index].trim() + ""; return { key: e[var_filter_index].trim() !== '' ? e[var_filter_index].trim() : null } }).flat();
+        let variables = [];
+        self.VARIABLE_DECODER_REGEX.lastIndex = 0;
+        while(true) {
+            const res = self.VARIABLE_DECODER_REGEX.exec(string);
+            if(res) {
+                let val = { name: res[1].trim(), filter: res[2].trim() !== '' ? res[2].trim() : null };
+                variables.push(val);
+            } else {
+                self.VARIABLE_DECODER_REGEX.lastIndex = 0;
+                break;
+            }
+        }
+        return variables;
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -422,6 +437,21 @@ class CurlyBracketParser {
             }
         }
         return false;
+    }
+
+    //----------------------------------------------------------------------------------------------------
+
+    /**
+     * Replace all search matches with replace variable
+     *
+     * @param {string} string
+     * @param {string} search
+     * @param {string} replace
+     * @returns {string} resulting string
+     * @private
+     */
+    static _replaceAll(string, search, replace) {
+        return string.split(search).join(replace);
     }
 
     //----------------------------------------------------------------------------------------------------
