@@ -21,13 +21,9 @@ function generateDoc() {
 function beautifyDoc(file) {
     const kind_line_regex = /^[\n\r]\*\*Kind[^\n\r]*[\n\r]/gms;
     const arrow_right_char_regex = /⇒/g;
-    const function_description_regex = /## Classes.*<a name="String"><\/a>/gms;
-    const functions_regex = /<a name="letterCase"><\/a>.*/gms;
     let data = fs.readFileSync(file, 'utf-8').toString();
     data = data.replace(kind_line_regex,'');
     data = data.replace(arrow_right_char_regex,'&rarr;');
-    data = data.replace(function_description_regex,'<a name="String"></a>');
-    data = data.replace(functions_regex,'');
     fs.writeFileSync(file, data, 'utf-8');
 }
 
