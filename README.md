@@ -1,5 +1,8 @@
 # curly-bracket-parser
-[![NPM version](https://badge.fury.io/js/curly-bracket-parser.svg)](http://badge.fury.io/js/curly-bracket-parser)
+[![Gem](https://img.shields.io/npm/v/curly-bracket-parser?color=default&style=plastic&logo=npm)](https://www.npmjs.com/package/curly-bracket-parser)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/magynhard/curly-bracket-parser?color=default&label=browser&logo=javascript&style=plastic)](https://github.com/magynhard/curly-bracket-parser/releases)
+![Gem](https://img.shields.io/npm/dt/curly-bracket-parser?color=blue&style=plastic)
+[![License: MIT](https://img.shields.io/badge/License-MIT-gold.svg?style=plastic&logo=mit)](LICENSE)
 
 > Javascript library providing a simple parser to replace curly brackets `{{like_this}}` inside strings like URLs, texts or even files (node only) easily. Available for node js and browser!
 
@@ -7,7 +10,7 @@ Additional support for build-in filters and custom filters make them more powerf
 
 [LuckyCase](https://github.com/magynhard/lucky-case) case formats are supported as default filters by node js dependency, in browser optionally if `LuckyCase` is loaded as well (bundled version).
 
-It is a port my equal ruby library [curly_bracket_parser](https://github.com/magynhard/lucky_case).
+It is a port my ruby gem [curly_bracket_parser](https://github.com/magynhard/lucky_case).
 
 
 
