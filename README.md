@@ -1,6 +1,7 @@
 # curly-bracket-parser
+[![NPM version](https://badge.fury.io/js/curly-bracket-parser.svg)](http://badge.fury.io/js/curly-bracket-parser)
 
-Javascript library providing a simple parser to replace curly brackets `{{like_this}}` inside strings like URLs, texts or even files (node only) easily. Available for node js and browser!
+> Javascript library providing a simple parser to replace curly brackets `{{like_this}}` inside strings like URLs, texts or even files (node only) easily. Available for node js and browser!
 
 Additional support for build-in filters and custom filters make them more powerful. `{{example|my_filter}}`
 
