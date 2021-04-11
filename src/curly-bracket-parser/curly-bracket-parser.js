@@ -7,7 +7,6 @@ if (typeof require === 'function' && typeof module !== 'undefined' && module.exp
     var UnresolvedVariablesError = require('./custom-errors/unresolved-variables-error.js');
     var VariableAlreadyRegisteredError = require('./custom-errors/variable-already-registered-error.js');
     var LuckyCase = require('lucky-case');
-    console.log("modules required");
 }
 //<!-- /MODULE -->//
 /**
