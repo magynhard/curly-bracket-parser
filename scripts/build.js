@@ -76,9 +76,27 @@ function prependToFile(file, string) {
     fs.writeFileSync(file, string + org_file);
 }
 
+function updateJsProjectVersion() {
+    let split_version = version().split('.');
+    split_version[split_version.length-1] = parseInt(split_version[split_version.length-1])+1;
+    const new_version = split_version.join('.');
+    // package.json
+    let package_json = fs.readFileSync('./package.json','utf8');
+    package_json = package_json.replace(version_regex, `"version": "${new_version}"`);
+    fs.writeFileSync('./package.json', package_json, 'utf8');
+    // project class
+    let project_js = fs.readFileSync('./src/curly-bracket-parser/curly-bracket-parser.js','utf8');
+    project_js = project_js.replace(/CurlyBracketParser\._version\s*=\s*"[^"]+";/gm, `CurlyBracketParser._version = "${new_version}";`)
+    fs.writeFileSync('./src/curly-bracket-parser/curly-bracket-parser.js', project_js, 'utf8');
+    return new_version;
+}
+
 console.log(chalk.yellow('###################################'));
 console.log(chalk.yellow('# CurlyBracketParser build script'));
 console.log(chalk.yellow('###################################'));
+console.log(`Updating version from ${version()} ...`);
+console.log(`... to version ${updateJsProjectVersion()}`);
+console.log();
 console.log('Building JS ...');
 for(let build_key of Object.keys(builds)) {
     const build = builds[build_key];

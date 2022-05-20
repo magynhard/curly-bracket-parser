@@ -19,6 +19,15 @@ if (typeof require === 'function' && typeof module !== 'undefined' && module.exp
  */
 class CurlyBracketParser {
     /**
+     * Get the version of the used library
+     * @returns {string}
+     */
+    static getVersion() {
+        const self = CurlyBracketParser;
+        return self._version;
+    }
+
+    /**
      * Parse given string and replace the included variables by the given variables
      *
      * @param {string} string
@@ -464,6 +473,12 @@ class CurlyBracketParser {
 
     //----------------------------------------------------------------------------------------------------
 }
+
+/**
+ * @type {string}
+ * @private
+ */
+CurlyBracketParser._version = "1.0.3";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};

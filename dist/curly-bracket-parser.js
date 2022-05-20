@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.0.2
- * @date 2021-04-11T08:21:37.674Z
+ * @version 1.0.3
+ * @date 2022-05-20T16:33:24.143Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -19,6 +19,15 @@
  *
  */
 class CurlyBracketParser {
+    /**
+     * Get the version of the used library
+     * @returns {string}
+     */
+    static getVersion() {
+        const self = CurlyBracketParser;
+        return self._version;
+    }
+
     /**
      * Parse given string and replace the included variables by the given variables
      *
@@ -465,6 +474,12 @@ class CurlyBracketParser {
 
     //----------------------------------------------------------------------------------------------------
 }
+
+/**
+ * @type {string}
+ * @private
+ */
+CurlyBracketParser._version = "1.0.3";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
