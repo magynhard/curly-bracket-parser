@@ -32,7 +32,7 @@
     "babel-plugin-transform-es3-member-expression-literals": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "chalk": "^4.1.0",
-    "chromedriver": "^87.0.5",
+    "chromedriver": "^102.0.0",
     "jasmine": "^3.6.3",
     "jasmine-browser-runner": "^0.4.0",
     "jsdoc": "^3.6.6",
