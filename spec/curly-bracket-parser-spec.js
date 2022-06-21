@@ -45,7 +45,7 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one}} person walked {{two}} times around {{three}}";
+            const string = "Today {{one}} person walked {{two}} times around {{three}}";
             const expected_string = "Today one person walked Two times around FURY";
             const parsed = CurlyBracketParser.parse(string, variables);
             expect(parsed).toEqual(expected_string);
@@ -56,7 +56,7 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one }} person walked {{  two}} times around {{ three }}";
+            const string = "Today {{one }} person walked {{  two}} times around {{ three }}";
             const expected_string = "Today one person walked Two times around FURY";
             const parsed = CurlyBracketParser.parse(string, variables);
             expect(parsed).toEqual(expected_string);
@@ -67,7 +67,7 @@ describe('CurlyBracketParser.parse', function () {
                 two: "TwoPascalCase",
                 three: "UPPER-DASH-CASE"
             };
-            const string          = "Today {{one|dash_case}} person walked {{two|snake_case}} times around {{three|camel_case}}";
+            const string = "Today {{one|dash_case}} person walked {{two|snake_case}} times around {{three|camel_case}}";
             const expected_string = "Today one-word-case person walked two_pascal_case times around upperDashCase";
             const parsed = CurlyBracketParser.parse(string, variables);
             expect(parsed).toEqual(expected_string);
@@ -78,7 +78,7 @@ describe('CurlyBracketParser.parse', function () {
                 two: "TwoPascalCase",
                 three: "UPPER-DASH-CASE"
             };
-            const string          = "Today {{one|   dash_case}} person walked {{two    |   snake_case }} times around {{  three|camel_case  }}"
+            const string = "Today {{one|   dash_case}} person walked {{two    |   snake_case }} times around {{  three|camel_case  }}"
             const expected_string = "Today one-word-case person walked two_pascal_case times around upperDashCase"
             const parsed = CurlyBracketParser.parse(string, variables);
             expect(parsed).toEqual(expected_string);
@@ -91,7 +91,7 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
+            const string = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
             expect(() => {
                 CurlyBracketParser.parse(string, variables);
             }).toThrowError(UnresolvedVariablesError);
@@ -102,9 +102,9 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
+            const string = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
             const expected_string = "Today one person walked Two times around FURY {{four}}"
-            const parsed = CurlyBracketParser.parse(string, variables, { unresolved_vars: "keep"});
+            const parsed = CurlyBracketParser.parse(string, variables, {unresolved_vars: "keep"});
             expect(parsed).toEqual(expected_string);
         });
         it('replaces the variable with one more variable in string by string', function () {
@@ -113,9 +113,12 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
+            const string = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
             const expected_string = "Today one person walked Two times around FURY ";
-            const parsed = CurlyBracketParser.parse(string, variables, { unresolved_vars: "replace", replace_pattern: ''});
+            const parsed = CurlyBracketParser.parse(string, variables, {
+                unresolved_vars: "replace",
+                replace_pattern: ''
+            });
             expect(parsed).toEqual(expected_string);
         });
         it('replaces the variable with one more variable in string by pattern with var name', function () {
@@ -124,9 +127,12 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
+            const string = "Today {{one}} person walked {{two}} times around {{three}} {{four}}";
             const expected_string = "Today one person walked Two times around FURY ##four##";
-            const parsed = CurlyBracketParser.parse(string, variables, { unresolved_vars: "replace", replace_pattern: '##$1##'});
+            const parsed = CurlyBracketParser.parse(string, variables, {
+                unresolved_vars: "replace",
+                replace_pattern: '##$1##'
+            });
             expect(parsed).toEqual(expected_string);
         });
         it('replaces the variable with one more variable in string by pattern with filter', function () {
@@ -135,9 +141,12 @@ describe('CurlyBracketParser.parse', function () {
                 two: "Two",
                 three: "FURY"
             };
-            const string          = "Today {{one}} person walked {{two}} times around {{three}} {{four|filtered}}";
+            const string = "Today {{one}} person walked {{two}} times around {{three}} {{four|filtered}}";
             const expected_string = "Today one person walked Two times around FURY ##four:filtered##";
-            const parsed = CurlyBracketParser.parse(string, variables, { unresolved_vars: "replace", replace_pattern: '##$1:$2##'});
+            const parsed = CurlyBracketParser.parse(string, variables, {
+                unresolved_vars: "replace",
+                replace_pattern: '##$1:$2##'
+            });
             expect(parsed).toEqual(expected_string);
         });
     });
@@ -156,7 +165,7 @@ describe('CurlyBracketParser.parseFile', function () {
                 three: "FURY"
             };
             const source_string = "Today {{one}} person walked {{two}} times around {{three}}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-1-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-1-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one person walked Two times around FURY";
             const parsed = CurlyBracketParser.parseFile(tmp_file_object.name, variables);
@@ -171,7 +180,7 @@ describe('CurlyBracketParser.parseFile', function () {
                 three: "FURY"
             };
             const source_string = "Today {{one }} person walked {{  two}} times around {{ three }}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-2-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-2-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one person walked Two times around FURY";
             const parsed = CurlyBracketParser.parseFile(tmp_file_object.name, variables);
@@ -186,7 +195,7 @@ describe('CurlyBracketParser.parseFile', function () {
                 three: "UPPER-DASH-CASE"
             };
             const source_string = "Today {{one|dash_case}} person walked {{two|snake_case}} times around {{three|camel_case}}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-3-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-3-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one-word-case person walked two_pascal_case times around upperDashCase";
             const parsed = CurlyBracketParser.parseFile(tmp_file_object.name, variables);
@@ -201,7 +210,7 @@ describe('CurlyBracketParser.parseFile', function () {
                 three: "UPPER-DASH-CASE"
             };
             const source_string = "Today {{one|   dash_case}} person walked {{two    |   snake_case }} times around {{  three|camel_case  }}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-4-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-4-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one-word-case person walked two_pascal_case times around upperDashCase";
             const parsed = CurlyBracketParser.parseFile(tmp_file_object.name, variables);
@@ -225,7 +234,7 @@ describe('CurlyBracketParser.parseFileWrite', function () {
                 three: "FURY"
             };
             const source_string = "Today {{one}} person walked {{two}} times around {{three}}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-1-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-1-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one person walked Two times around FURY";
             const parsed = CurlyBracketParser.parseFileWrite(tmp_file_object.name, variables);
@@ -240,7 +249,7 @@ describe('CurlyBracketParser.parseFileWrite', function () {
                 three: "FURY"
             };
             const source_string = "Today {{one }} person walked {{  two}} times around {{ three }}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-2-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-2-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one person walked Two times around FURY";
             const parsed = CurlyBracketParser.parseFileWrite(tmp_file_object.name, variables);
@@ -255,7 +264,7 @@ describe('CurlyBracketParser.parseFileWrite', function () {
                 three: "UPPER-DASH-CASE"
             };
             const source_string = "Today {{one|dash_case}} person walked {{two|snake_case}} times around {{three|camel_case}}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-3-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-3-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one-word-case person walked two_pascal_case times around upperDashCase";
             const parsed = CurlyBracketParser.parseFileWrite(tmp_file_object.name, variables);
@@ -270,7 +279,7 @@ describe('CurlyBracketParser.parseFileWrite', function () {
                 three: "UPPER-DASH-CASE"
             };
             const source_string = "Today {{one|   dash_case}} person walked {{two    |   snake_case }} times around {{  three|camel_case  }}";
-            let tmp_file_object = Tmp.fileSync({ prefix: 'jasmine-test-4-'});
+            let tmp_file_object = Tmp.fileSync({prefix: 'jasmine-test-4-'});
             fs.writeFileSync(tmp_file_object.name, source_string);
             const expected_string = "Today one-word-case person walked two_pascal_case times around upperDashCase";
             const parsed = CurlyBracketParser.parseFileWrite(tmp_file_object.name, variables);
@@ -291,7 +300,7 @@ describe('CurlyBracketParser.registerFilter', function () {
         it('includes a registered filter after registration', function () {
             const filter_name = 'my_one';
             CurlyBracketParser.registerFilter(filter_name, (string) => {
-               return string;
+                return string;
             });
             expect(CurlyBracketParser.validFilters()).toContain(filter_name);
         });
@@ -327,14 +336,14 @@ describe('CurlyBracketParser.registerFilter', function () {
             CurlyBracketParser.registerFilter(filter_name, (string) => {
                 return string + "" + string;
             });
-            expect(CurlyBracketParser.processFilter(filter_name,"hooray")).toEqual("hoorayhooray");
+            expect(CurlyBracketParser.processFilter(filter_name, "hooray")).toEqual("hoorayhooray");
         });
         it('can use a registered filter #2', function () {
             const filter_name = 'snake_cake';
             CurlyBracketParser.registerFilter(filter_name, (string) => {
                 return LuckyCase.toSnakeCase(string);
             });
-            expect(CurlyBracketParser.processFilter(filter_name,"TheSaladTastesSour")).toEqual("the_salad_tastes_sour");
+            expect(CurlyBracketParser.processFilter(filter_name, "TheSaladTastesSour")).toEqual("the_salad_tastes_sour");
         });
         it('can not use a unknown filter', function () {
             const filter_name = 'unknown_filter';
@@ -356,7 +365,7 @@ describe('CurlyBracketParser.registerDefaultVar', function () {
             const variable_name = 'my_default1';
             const variable_value = 'MySuperValue1';
             CurlyBracketParser.registerDefaultVar(variable_name, () => {
-               return variable_value;
+                return variable_value;
             });
             expect(CurlyBracketParser.registeredDefaultVars()).toContain(variable_name);
         });
@@ -364,7 +373,7 @@ describe('CurlyBracketParser.registerDefaultVar', function () {
             const variable_name = 'my_default11';
             const variable_value = 'MySuperValue11';
             CurlyBracketParser.registerDefaultVar(variable_name, () => {
-               return variable_value;
+                return variable_value;
             });
             expect(CurlyBracketParser.isRegisteredDefaultVar(variable_name)).toEqual(true);
         });
@@ -372,7 +381,7 @@ describe('CurlyBracketParser.registerDefaultVar', function () {
             const variable_name = 'my_default2';
             const variable_value = 'MySuperValue2';
             CurlyBracketParser.registerDefaultVar(variable_name, () => {
-               return variable_value;
+                return variable_value;
             });
             expect(() => {
                 CurlyBracketParser.registerDefaultVar(variable_name, () => {
@@ -402,7 +411,7 @@ describe('CurlyBracketParser.registerDefaultVar', function () {
             CurlyBracketParser.registerDefaultVar(variable_name, () => {
                 return variable_value;
             });
-            expect(CurlyBracketParser.parse(`Some{{${variable_name}}}Good`, { my_default9: 'Overwritten'})).toEqual("SomeOverwrittenGood");
+            expect(CurlyBracketParser.parse(`Some{{${variable_name}}}Good`, {my_default9: 'Overwritten'})).toEqual("SomeOverwrittenGood");
         });
         it('can overwrite a registered default value by function', function () {
             const variable_name = 'my_default22';
@@ -413,7 +422,7 @@ describe('CurlyBracketParser.registerDefaultVar', function () {
             });
             CurlyBracketParser.registerDefaultVar(variable_name, () => {
                 return variable_overwrite_value;
-            }, { overwrite: true });
+            }, {overwrite: true});
             expect(CurlyBracketParser.parse(`Some{{${variable_name}}}Good`)).toEqual(`Some${variable_overwrite_value}Good`);
         });
     });
@@ -430,7 +439,7 @@ describe('CurlyBracketParser.unregisterDefaultVar', function () {
             const variable_name = 'my_default_un';
             const variable_value = 'MySuperValueUn';
             CurlyBracketParser.registerDefaultVar(variable_name, () => {
-               return variable_value;
+                return variable_value;
             });
             expect(CurlyBracketParser.registeredDefaultVars()).toContain(variable_name);
             CurlyBracketParser.unregisterDefaultVar(variable_name);
@@ -448,8 +457,12 @@ describe('CurlyBracketParser.decodedVariables', function () {
         it('decode string with several variables, with and without filters', function () {
             const string = 'This is my {{var1}} super string, containing {{count|filter_some}} variables and a lot of {{fun}}';
             const decoded_variables = CurlyBracketParser.decodedVariables(string)
-            expect(decoded_variables.map((e) => {return e.name}).flat()).toEqual(['var1', 'count', 'fun']);
-            expect(decoded_variables.map((e) => {return e.filter}).flat()).toEqual([null, 'filter_some', null]);
+            expect(decoded_variables.map((e) => {
+                return e.name
+            }).flat()).toEqual(['var1', 'count', 'fun']);
+            expect(decoded_variables.map((e) => {
+                return e.filter
+            }).flat()).toEqual([null, 'filter_some', null]);
         });
     });
 });
@@ -462,11 +475,32 @@ describe('CurlyBracketParser.includesOneVariableOf', function () {
     describe('includes one of the given variables in the given string', function () {
         it('includes all of the three variables', function () {
             const string = 'This is my {{var2}} super string, containing {{count2|filter_some}} variables and a lot of {{fun3}}';
-            expect(CurlyBracketParser.includesOneVariableOf(['var2','count2','fun3'], string)).toEqual(true);
-            expect(CurlyBracketParser.includesOneVariableOf(['var','count','fun'], string)).toEqual(false);
+            expect(CurlyBracketParser.includesOneVariableOf(['var2', 'count2', 'fun3'], string)).toEqual(true);
+            expect(CurlyBracketParser.includesOneVariableOf(['var', 'count', 'fun'], string)).toEqual(false);
             expect(CurlyBracketParser.includesOneVariableOf(['var2'], string)).toEqual(true);
             expect(CurlyBracketParser.includesOneVariableOf(['count2'], string)).toEqual(true);
             expect(CurlyBracketParser.includesOneVariableOf(['fun3'], string)).toEqual(true);
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------
+// Bugfix endless loop when using nested variables
+//----------------------------------------------------------------------------------------------------
+describe('CurlyBracketParser.parse', function () {
+    beforeEach(function () {
+    });
+    describe('Using nested variables', function () {
+        it('loops not endless', function () {
+            const test_map = {
+                animal: 'bug',
+                this_animal: 'This is a {{animal}}',
+                which_animal: 'Which animal? {{this_animal}}'
+            };
+            expect(CurlyBracketParser.parse(test_map['animal'], test_map)).toEqual('bug');
+            expect(CurlyBracketParser.parse(test_map['this_animal'], test_map)).toEqual('This is a bug');
+            console.log(" If you see this for more than a few seconds and nothing more happens, this test is for sure failing in an endless loop!");
+            expect(CurlyBracketParser.parse(test_map['which_animal'], test_map)).toEqual('Which animal? This is a bug');
         });
     });
 });

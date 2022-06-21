@@ -48,7 +48,7 @@ class CurlyBracketParser {
         let result_string = string;
         if(self.isAnyVariableIncluded(string)) {
             while(true) {
-                for(let string_var of self.variables(string)) {
+                for(let string_var of self.variables(result_string)) {
                     const decoded_var = self.decodeVariable(string_var);
                     const name = decoded_var.name;
                     const filter = decoded_var.filter;
@@ -478,7 +478,7 @@ class CurlyBracketParser {
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.0.3";
+CurlyBracketParser._version = "1.0.4";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};

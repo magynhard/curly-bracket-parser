@@ -8,6 +8,7 @@ Parse variables with curly brackets within templates/strings or files
 Use filters for special cases
 
 * [CurlyBracketParser](#CurlyBracketParser)
+    * [.getVersion()](#CurlyBracketParser.getVersion) &rarr; <code>string</code>
     * [.parse(string, variables, options)](#CurlyBracketParser.parse) &rarr; <code>string</code>
     * [.parseFile(path, variables, options)](#CurlyBracketParser.parseFile) &rarr; <code>string</code> \| <code>null</code>
     * [.parseFileWrite(path, variables, options)](#CurlyBracketParser.parseFileWrite) &rarr; <code>string</code> \| <code>null</code>
@@ -26,6 +27,10 @@ Use filters for special cases
     * [.isAnyVariableIncluded(string)](#CurlyBracketParser.isAnyVariableIncluded) &rarr; <code>boolean</code>
     * [.includesOneVariableOf(variable_names, string)](#CurlyBracketParser.includesOneVariableOf) &rarr; <code>boolean</code>
 
+<a name="CurlyBracketParser.getVersion"></a>
+
+### CurlyBracketParser.getVersion() &rarr; <code>string</code>
+Get the version of the used library
 <a name="CurlyBracketParser.parse"></a>
 
 ### CurlyBracketParser.parse(string, variables, options) &rarr; <code>string</code>
