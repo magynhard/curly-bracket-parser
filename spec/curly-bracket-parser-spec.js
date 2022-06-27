@@ -12,6 +12,8 @@ const fs = require("fs");
 
 const Tmp = require('tmp');
 
+require('ruby-nice/object');
+
 //----------------------------------------------------------------------------------------------------
 
 describe('CurlyBracketParser.variables', function () {
@@ -501,6 +503,64 @@ describe('CurlyBracketParser.parse', function () {
             expect(CurlyBracketParser.parse(test_map['this_animal'], test_map)).toEqual('This is a bug');
             console.log(" If you see this for more than a few seconds and nothing more happens, this test is for sure failing in an endless loop!");
             expect(CurlyBracketParser.parse(test_map['which_animal'], test_map)).toEqual('Which animal? This is a bug');
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------------------------------
+
+describe('CurlyBracketParser.parse', function () {
+    beforeEach(function () {
+    });
+    describe('Using embedded string variables', function () {
+        it('embeds a single quoted string', function () {
+            expect(CurlyBracketParser.parse("This is a normal {{variable}} and a {{'embedded'}} one.", {variable: 'variable'}))
+                .toEqual('This is a normal variable and a embedded one.');
+        });
+        it('embeds a single quoted string with filter', function () {
+            expect(CurlyBracketParser.parse("This is a normal {{variable}} and a {{'embedded'|pascal_case}} one.", {variable: 'variable'}))
+                .toEqual('This is a normal variable and a Embedded one.');
+        });
+        it('embeds a single quoted string with filter and white spaces', function () {
+            expect(CurlyBracketParser.parse("This is a normal {{variable}} and a {{ 'embedded'   | pascal_case  }} one.", {variable: 'variable'}))
+                .toEqual('This is a normal variable and a Embedded one.');
+        });
+        it('embeds a double quoted string', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{"embedded"}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a embedded one.');
+        });
+        it('embeds a double quoted string with filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{"embedded"|pascal_case}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a Embedded one.');
+        });
+        it('embeds integers without filters', function () {
+            expect(CurlyBracketParser.parse("Peter is {{3}} years old.")).toEqual("Peter is 3 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{77}} years old.")).toEqual("Peter is 77 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{500_000}} years old.")).toEqual("Peter is 500000 years old.");
+        });
+        it('embeds integers without with filters', function () {
+            CurlyBracketParser.registerFilter('double', (val) => {
+               return val*2;
+            });
+            expect(CurlyBracketParser.parse("Peter is {{3|double}} years old.")).toEqual("Peter is 6 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{77|double}} years old.")).toEqual("Peter is 154 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{500_000|double}} years old.")).toEqual("Peter is 1000000 years old.");
+        });
+        it('embeds floating point numbers without filters', function () {
+            expect(CurlyBracketParser.parse("Peter is {{3.0}} years old.")).toEqual("Peter is 3 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{7.}} years old.")).toEqual("Peter is 7 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{7.5}} years old.")).toEqual("Peter is 7.5 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{0.8}} years old.")).toEqual("Peter is 0.8 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{.9}} years old.")).toEqual("Peter is 0.9 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{500_0.00}} years old.")).toEqual("Peter is 5000 years old.");
+        });
+        it('does not embed invalid integers', function () {
+            expect(() => {
+                CurlyBracketParser.parse("Peter is {{3_}} years old.");
+            }).toThrowError(UnresolvedVariablesError);
         });
     });
 });

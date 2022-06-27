@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.0.4
- * @date 2022-06-21T14:54:46.842Z
+ * @version 1.1.2
+ * @date 2022-06-27T21:09:56.974Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -38,7 +38,7 @@ class CurlyBracketParser {
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
      * @returns {string} parsed string
      */
-    static parse(string, variables = {}, options = { unresolved_vars: "throw", replace_pattern: "##$1##"}) {
+    static parse(string, variables = {}, options = {unresolved_vars: "throw", replace_pattern: "##$1##"}) {
         const self = CurlyBracketParser;
         options = options ? options : {};
         const default_options = {
@@ -47,32 +47,37 @@ class CurlyBracketParser {
         options = Object.assign(default_options, options);
         variables = variables || {};
         let result_string = string;
-        if(self.isAnyVariableIncluded(string)) {
-            while(true) {
-                for(let string_var of self.variables(result_string)) {
+        if (self.isAnyVariableIncluded(string)) {
+            while (true) {
+                for (let string_var of self.variables(result_string)) {
                     const decoded_var = self.decodeVariable(string_var);
                     const name = decoded_var.name;
                     const filter = decoded_var.filter;
                     let value = null;
-                    if(variables[name]) {
-                        if(filter) {
-                            value = self.processFilter(filter, variables[name]);
-                        } else {
-                            value = variables[name];
-                        }
-                        result_string = self._replaceAll(result_string, string_var, value);
-                    } else if(self.isRegisteredDefaultVar(name)) {
+                    const is_single_quoted = name.startsWith("'") && name.endsWith("'");
+                    const is_double_quoted = name.startsWith('"') && name.endsWith('"');
+                    // When the name itself is quoted as string, we use it as a value itself
+                    if (is_double_quoted || is_single_quoted) {
+                        value = name.substring(1, name.length - 1);
+                    } else if (Typifier.isNumberString(name)) {
+                        value = eval(name);
+                    } else if (variables[name]) {
+                        value = variables[name];
+                    } else if (self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
+                    }
+                    if (value) {
+                        if (filter) value = self.processFilter(filter, value);
                         result_string = self._replaceAll(result_string, string_var, value);
                     }
                 }
-                if(!(self.isAnyVariableIncluded(result_string) && self.includesOneVariableOf(Object.keys(variables), result_string))) {
+                if (!(self.isAnyVariableIncluded(result_string) && self.includesOneVariableOf(Object.keys(variables), result_string))) {
                     break;
                 }
             }
             switch (options.unresolved_vars) {
                 case "throw":
-                    if(self.isAnyVariableIncluded(result_string)) {
+                    if (self.isAnyVariableIncluded(result_string)) {
                         throw new UnresolvedVariablesError(`There are unresolved variables in the given string: ${self.variables(result_string)}`);
                     }
                     break;
@@ -98,7 +103,12 @@ class CurlyBracketParser {
      * @param {boolean} options.write write parsed content of the file directly into the file. Only available when running by node js.
      * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
      */
-    static parseFile(path, variables = {}, options = { unresolved_vars: "throw", replace_pattern: "##$1##", success: null, write: false }) {
+    static parseFile(path, variables = {}, options = {
+        unresolved_vars: "throw",
+        replace_pattern: "##$1##",
+        success: null,
+        write: false
+    }) {
         const self = CurlyBracketParser;
         const default_options = {
             unresolved_vars: "throw", replace_pattern: "##$1##", success: null, write: false
@@ -106,23 +116,23 @@ class CurlyBracketParser {
         options = options ? options : {};
         options = Object.assign(default_options, options);
         variables = variables || {};
-        if(self._runByNode()) {
+        if (self._runByNode()) {
             const fs = require("fs");
             const file_content = fs.readFileSync(path, 'utf-8').toString();
             const parsed_content = self.parse(file_content, variables, options);
-            if(options.write) {
+            if (options.write) {
                 fs.writeFileSync(path, parsed_content);
             }
             return parsed_content;
-        } else if(self._runByBrowser()) {
+        } else if (self._runByBrowser()) {
             const error_message = `Could not retrieve file '${path}' by GET.`;
-            if(options.success && typeof options.success === 'function') {
+            if (options.success && typeof options.success === 'function') {
                 // async
                 const request = new XMLHttpRequest();
                 request.open('GET', path, true);
                 request.onload = function (e) {
                     if (request.readyState === 4) {
-                        if(request.status === 200) {
+                        if (request.status === 200) {
                             const parsed_content = self.parse(request.responseText, variables, options);
                             options.success(parsed_content);
                         } else {
@@ -139,7 +149,7 @@ class CurlyBracketParser {
                 const request = new XMLHttpRequest();
                 request.open('GET', path, false);
                 request.send(null);
-                if(request.status === 200) {
+                if (request.status === 200) {
                     return self.parse(request.responseText, variables, options);
                 } else {
                     throw new FileNotRetrievedError(error_message + "\n" + request.statusText);
@@ -163,40 +173,15 @@ class CurlyBracketParser {
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
      * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
      */
-    static parseFileWrite(path, variables = {}, options = { unresolved_vars: "throw", replace_pattern: "##$1##"}) {
+    static parseFileWrite(path, variables = {}, options = {unresolved_vars: "throw", replace_pattern: "##$1##"}) {
         const self = CurlyBracketParser;
         options = options ? options : {};
         options.write = true;
-        if(self._runByNode()) {
+        if (self._runByNode()) {
             return self.parseFile(path, variables, options);
         } else {
             throw "This method can only be run on node js, not in browser.";
         }
-    }
-
-    //----------------------------------------------------------------------------------------------------
-
-    /**
-     * Check if this javascript is running in node js
-     *
-     * @returns {boolean} true if running with node js (not browser)
-     * @private
-     */
-    static _runByNode() {
-        return (typeof module !== 'undefined' && module.exports);
-    }
-
-    //----------------------------------------------------------------------------------------------------
-
-    /**
-     * Check if this javascript is running in a browser
-     *
-     * @returns {boolean} true if running with browser
-     * @private
-     */
-    static _runByBrowser() {
-        const self = CurlyBracketParser;
-        return !self._runByNode();
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -210,12 +195,12 @@ class CurlyBracketParser {
      * @param {boolean} options.raise_on_exist raise exception if filter does already exist, default: true
      * @throws {FilterAlreadyRegisteredError} if filter does already exist
      */
-    static registerFilter(name, filter_function, options = { raise_on_exist: true}) {
+    static registerFilter(name, filter_function, options = {raise_on_exist: true}) {
         const self = CurlyBracketParser;
-        if(self.isValidFilter(name)) {
+        if (self.isValidFilter(name)) {
             throw new FilterAlreadyRegisteredError(`The given filter name '${name}' is already registered`);
         } else {
-            if(typeof filter_function === 'function') {
+            if (typeof filter_function === 'function') {
                 self.registered_filters[name] = filter_function;
             } else {
                 throw `Given parameter 'filter_function' must be of type 'function'. It is of type '${typeof filter_function}'.`;
@@ -235,16 +220,13 @@ class CurlyBracketParser {
      */
     static processFilter(name, value) {
         const self = CurlyBracketParser;
-        if(self.registered_filters[name]) {
+        if (self.registered_filters[name]) {
             return self.registered_filters[name](value);
-        } else if(typeof LuckyCase !== 'undefined' && self.VALID_DEFAULT_FILTERS().includes(LuckyCase.toUpperCase(name)) && LuckyCase.isValidCaseType(LuckyCase.toUpperCase(name))) {
+        } else if (typeof LuckyCase !== 'undefined' && self.VALID_DEFAULT_FILTERS().includes(LuckyCase.toUpperCase(name)) && LuckyCase.isValidCaseType(LuckyCase.toUpperCase(name))) {
             return LuckyCase.convertCase(value, LuckyCase.toUpperCase(name));
         } else {
             const error_message = `Invalid filter '${name}'. Valid filters are: ${self.validFilters().join(' ')}`;
             throw new InvalidFilterError(error_message);
-        }
-        if(typeof LuckyCase !== 'undefined') {
-            console.warn(`CurlyBracketParser: 'LuckyCase' is not defined. If you add LuckyCase, you can use all of its case transformers as filters!`);
         }
     }
 
@@ -259,7 +241,9 @@ class CurlyBracketParser {
         const self = CurlyBracketParser;
         const default_filters = self.VALID_DEFAULT_FILTERS();
         const registered_filters = Object.keys(self.registered_filters);
-        const default_filters_lower_case = self.VALID_DEFAULT_FILTERS().map((e) => { return e.toLocaleLowerCase();});
+        const default_filters_lower_case = self.VALID_DEFAULT_FILTERS().map((e) => {
+            return e.toLocaleLowerCase();
+        });
         return default_filters.concat(registered_filters).concat(default_filters_lower_case);
     }
 
@@ -288,18 +272,18 @@ class CurlyBracketParser {
      * @param {boolean} options.overwrite explicitly overwrite an existing default var without throwing an execption
      * @returns {function} var_function
      */
-    static registerDefaultVar(name, var_function, options = { overwrite: false }) {
+    static registerDefaultVar(name, var_function, options = {overwrite: false}) {
         const self = CurlyBracketParser;
         options = options ? options : {};
         const default_options = {
             unresolved_vars: "throw", replace_pattern: "##$1##"
         }
         options = Object.assign(default_options, options);
-        if(self.isRegisteredDefaultVar(name) && options.overwrite === false) {
+        if (self.isRegisteredDefaultVar(name) && options.overwrite === false) {
             const error_message = `The given variable name '${name}' is already registered. If you want to override that variable explicitly, use option 'overwrite: true'!`;
             throw new VariableAlreadyRegisteredError(error_message)
         } else {
-            if(typeof var_function === 'function') {
+            if (typeof var_function === 'function') {
                 return self.registered_default_vars[name] = var_function;
             } else {
                 throw `Given parameter 'var_function' must be of type 'function'. It is of type '${typeof var_function}'.`;
@@ -317,7 +301,7 @@ class CurlyBracketParser {
      */
     static processDefaultVar(name) {
         const self = CurlyBracketParser;
-        if(self.registered_default_vars[name]) {
+        if (self.registered_default_vars[name]) {
             return self.registered_default_vars[name]();
         } else {
             const error_message = `Invalid default variable '${name}'. Valid registered default variables are: ${Object.keys(self.registered_default_vars).join(' ')}`;
@@ -335,7 +319,7 @@ class CurlyBracketParser {
      */
     static unregisterDefaultVar(name) {
         const self = CurlyBracketParser;
-        if(self.registered_default_vars[name]) {
+        if (self.registered_default_vars[name]) {
             delete self.registered_default_vars[name];
             return true;
         } else {
@@ -399,10 +383,10 @@ class CurlyBracketParser {
         const self = CurlyBracketParser;
         let variables = [];
         self.VARIABLE_DECODER_REGEX.lastIndex = 0;
-        while(true) {
+        while (true) {
             const res = self.VARIABLE_DECODER_REGEX.exec(string);
-            if(res) {
-                let val = { name: res[1].trim(), filter: res[2].trim() !== '' ? res[2].trim() : null };
+            if (res) {
+                let val = {name: res[1].trim(), filter: res[2].trim() !== '' ? res[2].trim() : null};
                 variables.push(val);
             } else {
                 self.VARIABLE_DECODER_REGEX.lastIndex = 0;
@@ -449,8 +433,8 @@ class CurlyBracketParser {
      */
     static includesOneVariableOf(variable_names, string) {
         const self = CurlyBracketParser;
-        for(let val of self.decodedVariables(string)) {
-            if(variable_names.includes(val.name)) {
+        for (let val of self.decodedVariables(string)) {
+            if (variable_names.includes(val.name)) {
                 return true;
             }
         }
@@ -473,13 +457,39 @@ class CurlyBracketParser {
     }
 
     //----------------------------------------------------------------------------------------------------
+
+    /**
+     * Check if this javascript is running in node js
+     *
+     * @returns {boolean} true if running with node js (not browser)
+     * @private
+     */
+    static _runByNode() {
+        return (typeof module !== 'undefined' && module.exports);
+    }
+
+    //----------------------------------------------------------------------------------------------------
+
+    /**
+     * Check if this javascript is running in a browser
+     *
+     * @returns {boolean} true if running with browser
+     * @private
+     */
+    static _runByBrowser() {
+        const self = CurlyBracketParser;
+        return !self._runByNode();
+    }
+
+    //----------------------------------------------------------------------------------------------------
+
 }
 
 /**
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.0.4";
+CurlyBracketParser._version = "1.1.2";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
@@ -488,7 +498,7 @@ CurlyBracketParser.registered_default_vars = {};
 CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]+)\|?([^{}\|]*)}}/gsm;
 CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]+}}/gsm;
 CurlyBracketParser.VALID_DEFAULT_FILTERS = () => {
-    if(typeof LuckyCase !== 'undefined') {
+    if (typeof LuckyCase !== 'undefined') {
         return Object.keys(LuckyCase.CASES);
     } else {
         return [];
@@ -1654,6 +1664,296 @@ class InvalidConstantError extends Error {
         this.name = "InvalidConstantError";
     }
 }
+
+
+
+/**
+ * typifier
+ *
+ * The javascript library to get or check the type of a given variable.
+ *
+ * @version 0.0.11
+ * @date 2022-06-23T15:43:32.336Z
+ * @link https://github.com/magynhard/typifier
+ * @author Matthäus J. N. Beyrle
+ * @copyright Matthäus J. N. Beyrle
+ */
+
+
+/**
+ * Typifier
+ *
+ * The javascript library to get or check the type of a given variable.
+ *
+ */
+class Typifier {
+    /**
+     * Get the version of the used library
+     * @returns {string}
+     */
+    static getVersion() {
+        const self = Typifier;
+        return self._version;
+    }
+
+    /**
+     * Check if given variable is of type Array
+     *
+     * @param {any} value
+     * @returns {boolean} true if Array, otherwise false
+     */
+    static isArray(value) {
+        return value instanceof Array && value.constructor.name === 'Array';
+    }
+
+    /**
+     * Check if given variable is of type Object
+     *
+     * @param {any} value
+     * @returns {boolean} true if Object, otherwise false
+     */
+    static isObject(value) {
+        return value instanceof Object && value.constructor.name === 'Object';
+    }
+
+    /**
+     * Check if given variable is of type string (primitive)
+     *
+     * @param {any} value
+     * @returns {boolean} true if 'string', otherwise false
+     */
+    static isString(value) {
+        return typeof value === 'string';
+    }
+
+    /**
+     * Check if given variable is of type String (class instance)
+     *
+     * @param {any} value
+     * @returns {boolean} true if instance of class 'String', otherwise false
+     */
+    static isStringClass(value) {
+        return value instanceof Object && value.constructor.name === 'String';
+    }
+
+    /**
+     * Check if given variable is of type number (primitive)
+     *
+     * @param {any} value
+     * @returns {boolean} true if 'number', otherwise false
+     */
+    static isNumber(value) {
+        return typeof value === 'number';
+    }
+
+    /**
+     * Check if given variable is of type Number (class instance)
+     *
+     * @param {any} value
+     * @returns {boolean} true if instance of class 'Number', otherwise false
+     */
+    static isNumberClass(value) {
+        return value instanceof Object && value.constructor.name === 'Number';
+    }
+
+    /**
+     * Check if given variable is a valid number inside a string that evaluates to a number in Javascript.
+     *
+     * @example
+     *      // valid number strings
+     *      '200'
+     *      '25.75'
+     *      '10.'
+     *      '.5'
+     *      '500_000'
+     *
+     * @param {any} value
+     * @returns {boolean} true if valid JavaScript number inside string
+     */
+    static isNumberString(value) {
+        const self = Typifier;
+        if(!(self.isString(value) || self.isStringClass(value))) return false;
+        const number_regex = /^[0-9._]+$/g
+        if(value.match(number_regex)) {
+            try {
+                eval(value);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if given variable is of type Date
+     *
+     * @param {any} value
+     * @returns {boolean} true if Date, otherwise false
+     */
+    static isDate(value) {
+        return value instanceof Date;
+    }
+
+    /**
+     * Check if given variable is of type RegExp
+     *
+     * @param {any} value
+     * @returns {boolean} true if RegExp, otherwise false
+     */
+    static isRegExp(value) {
+        return value instanceof RegExp;
+    }
+
+    /**
+     * Check if given variable is of type NaN
+     *
+     * @param {any} value
+     * @returns {boolean} true if NaN, otherwise false
+     */
+    static isNaN(value) {
+        return typeof value === 'number' && (value).toString() === 'NaN';
+    }
+
+    /**
+     * Check if given variable is of type Infinity
+     *
+     * @param {any} value
+     * @returns {boolean} true if Infinity, otherwise false
+     */
+    static isInfinity(value) {
+        return value === Infinity;
+    }
+
+    /**
+     * Check if given variable is of type undefined
+     *
+     * @param {any} value
+     * @returns {boolean} true if undefined, otherwise false
+     */
+    static isUndefined(value) {
+        return typeof value === 'undefined';
+    }
+
+    /**
+     * Check if given variable is of type null
+     *
+     * @param {any} value
+     * @returns {boolean} true if null, otherwise false
+     */
+    static isNull(value) {
+        return typeof value === null;
+    }
+
+    /**
+     * Check if given variable is of type boolean (primitive)
+     *
+     * @param {any} value
+     * @returns {boolean} true if 'boolean' or instance of class 'Boolean', otherwise false
+     */
+    static isBoolean(value) {
+        return typeof value === 'boolean' || (value instanceof Object && value.constructor.name === 'Boolean');
+    }
+
+    /**
+     * Check if given variable is of type Boolean (class instance)
+     *
+     * @param {any} value
+     * @returns {boolean} true if instance of class 'Boolean', otherwise false
+     */
+    static isBooleanClass(value) {
+        return value instanceof Object && value.constructor.name === 'Boolean';
+    }
+
+    /**
+     * Check if given variable is of type function
+     *
+     * @param {any} value
+     * @returns {boolean} true if function, otherwise false
+     */
+    static isFunction(value) {
+        return typeof value === 'function';
+    }
+
+    /**
+     * Check if the given value is of the given type.
+     *
+     * @example
+     *  Typifier.is('Array',[1,2,3]) // => true
+     *
+     * @param {string} type
+     * @param {any} value
+     * @returns {boolean} true if the value is of the given type
+     */
+    static is(type, value) {
+        const self = Typifier;
+        return self.getType(value) === type;
+    }
+
+    /**
+     * Get the type of the given value.
+     * Primitive types are lower case.
+     *
+     * @example
+     *  'Object'
+     * @example
+     *  'string'
+     *
+     * @param {any} value
+     * @returns {string} type in pascal case format
+     */
+    static getType(value) {
+        const self = Typifier;
+        if (self.isArray(value)) {
+            return 'Array';
+        } else if (self.isObject(value)) {
+            return 'Object';
+        } else if (self.isString(value)) {
+            return 'string';
+        } else if (self.isStringClass(value)) {
+            return 'String';
+        } else if (self.isNumber(value)) {
+            return 'number';
+        } else if (self.isNumberClass(value)) {
+            return 'Number';
+        } else if (self.isDate(value)) {
+            return 'Date';
+        } else if (self.isRegExp(value)) {
+            return 'RegExp';
+        } else if (self.isNaN(value)) {
+            return 'NaN';
+        } else if (self.isInfinity(value)) {
+            return 'Infinity';
+        } else if (self.isUndefined(value)) {
+            return 'undefined';
+        } else if (self.isNull(value)) {
+            return 'null';
+        } else if (self.isBoolean(value)) {
+            return 'boolean';
+        } else if (self.isBooleanClass(value)) {
+            return 'Boolean';
+        } else if (self.isFunction(value)) {
+            return 'function';
+        } else {
+            let type = 'Unknown';
+            if (value && value.constructor) {
+                type = value.constructor.name;
+            } else if (value && value.prop && value.prop.constructor) {
+                type = value.prop.constructor;
+            } else {
+                type = typeof value;
+            }
+            return LuckyCase.toPascalCase(type);
+        }
+    }
+}
+
+/**
+ * @type {string}
+ * @private
+ */
+Typifier._version = "0.0.11";
 
 
 

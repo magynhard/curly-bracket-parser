@@ -34,7 +34,7 @@ const release_header_template = `/**
 `;
 
 const builds = {
-    default_build: {
+    default: {
         destination_file: build_destination_dir + 'curly-bracket-parser.js',
         destination_min_file: build_destination_dir + 'curly-bracket-parser.min.js',
         source_files: [
@@ -46,7 +46,7 @@ const builds = {
             './src/curly-bracket-parser/custom-errors/unresolved-variables-error.js',
             './src/curly-bracket-parser/custom-errors/variable-already-registered-error.js',
     ]},
-    bundle_build: {
+    bundle: {
         destination_file: build_destination_dir + 'curly-bracket-parser.bundle.js',
         destination_min_file: build_destination_dir + 'curly-bracket-parser.bundle.min.js',
         source_files: [
@@ -58,6 +58,7 @@ const builds = {
             './src/curly-bracket-parser/custom-errors/unresolved-variables-error.js',
             './src/curly-bracket-parser/custom-errors/variable-already-registered-error.js',
             './node_modules/lucky-case/dist/lucky-case.js',
+            './node_modules/typifier/dist/typifier.js',
     ]}
 }
 

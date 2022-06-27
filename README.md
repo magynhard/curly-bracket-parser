@@ -74,6 +74,15 @@ You can either parse variables inside strings or even directly in files.
     // => "https://my-domain.com/items/123"
 ```
 
+Nested variables are supported as well:
+```javascript
+    const tmpl = "This is my template with {{my_nested_variable}}";
+    const my_nested_variable = "my {{nested}} variable"; 
+    const parsed_tmpl = CurlyBracketParser.parse(tmpl, { my_nested_varialbe: my_nested_variable, nested: 'pizza'});
+    // => "This is my template with my pizza variable"
+```
+
+
 ### Filters
 
 You can register your own filters, or if you use the bundled version, all cases of LuckyCase.
@@ -96,6 +105,18 @@ For a list of built-in filters in the bundled version visit [LuckyCase](https://
     const text = "Paul went out and screamed: A{{scream|7times}}h";
     const final_text = CurlyBracketParser.parse(text, { scream: 'a' });
     // => "Paul went out and screamed: Aaaaaaaah"
+```
+
+### Value variables
+
+For special cases you can directly define or set variables inside the template - usually it does only make sense, if you combine them with custom filters.
+
+You can either use quotes to define a string or numbers (integer or floating point) directly.
+
+```javascript
+    const tmpl = `This is a {{'string'|pascal_case}} and today is {{"today"|date_filter}}. Peter is {{'1990-10-05'|iso_date_age}} years old. His girlfriends name is {{girl|pascal_case}}`;
+    const parsed = CurlyBracketParser.parse(tmpl { girl: "anna" });
+    // => "This is a String and today is 2022-06-27. Peter is 32 years old. His girlfriends name is Anna."
 ```
 
 ### Files
