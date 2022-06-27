@@ -114,9 +114,9 @@ For special cases you can directly define or set variables inside the template -
 You can either use quotes to define a string or numbers (integer or floating point) directly.
 
 ```javascript
-    const tmpl = `This is a {{'string'|pascal_case}} and today is {{"today"|date_filter}}. Peter is {{'1990-10-05'|iso_date_age}} years old. His girlfriends name is {{girl|pascal_case}}`;
+    const tmpl = `This is a {{'string'|pascal_case}} and today is {{"today"|date_filter}}. Peter is {{'1990-10-05'|iso_date_age}} years old. His girlfriends name is {{girl|pascal_case}} and she is {{16|double_number}} years old.`;
     const parsed = CurlyBracketParser.parse(tmpl { girl: "anna" });
-    // => "This is a String and today is 2022-06-27. Peter is 32 years old. His girlfriends name is Anna."
+    // => "This is a String and today is 2022-06-27. Peter is 32 years old. His girlfriends name is Anna and she is 32 years old."
 ```
 
 ### Files
