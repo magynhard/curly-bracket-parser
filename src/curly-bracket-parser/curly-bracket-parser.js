@@ -57,7 +57,7 @@ class CurlyBracketParser {
                     let value = null;
                     const is_single_quoted = name.startsWith("'") && name.endsWith("'");
                     const is_double_quoted = name.startsWith('"') && name.endsWith('"');
-                    // When the name itself is quoted as string, we use it as a value itself
+                    // When the name itself is quoted as string or is a number, we use it as a value itself
                     if (is_double_quoted || is_single_quoted) {
                         value = name.substring(1, name.length - 1);
                     } else if (Typifier.isNumberString(name)) {
