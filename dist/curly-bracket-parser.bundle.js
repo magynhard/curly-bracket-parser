@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.1.2
- * @date 2022-06-27T21:09:56.974Z
+ * @version 1.1.3
+ * @date 2022-06-27T21:30:22.089Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -56,7 +56,7 @@ class CurlyBracketParser {
                     let value = null;
                     const is_single_quoted = name.startsWith("'") && name.endsWith("'");
                     const is_double_quoted = name.startsWith('"') && name.endsWith('"');
-                    // When the name itself is quoted as string, we use it as a value itself
+                    // When the name itself is quoted as string or is a number, we use it as a value itself
                     if (is_double_quoted || is_single_quoted) {
                         value = name.substring(1, name.length - 1);
                     } else if (Typifier.isNumberString(name)) {
@@ -489,7 +489,7 @@ class CurlyBracketParser {
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.1.2";
+CurlyBracketParser._version = "1.1.3";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
