@@ -52,7 +52,7 @@ class CurlyBracketParser {
             while (true) {
                 for (let string_var of self.variables(result_string)) {
                     const decoded_var = self.decodeVariable(string_var);
-                    const name = decoded_var.name;
+                    const name = !decoded_var.name && decoded_var.name !== 0 ? "''" : decoded_var.name;
                     const filter = decoded_var.filter;
                     let value = null;
                     const is_single_quoted = name.startsWith("'") && name.endsWith("'");
@@ -67,7 +67,7 @@ class CurlyBracketParser {
                     } else if (self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
                     }
-                    if (value) {
+                    if (value !== null) {
                         if (filter) value = self.processFilter(filter, value);
                         result_string = self._replaceAll(result_string, string_var, value);
                     }
@@ -496,8 +496,8 @@ CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
 
 // constants for formats
-CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]+)\|?([^{}\|]*)}}/gsm;
-CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]+}}/gsm;
+CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]*)\|?([^{}\|]*)}}/gsm;
+CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]*}}/gsm;
 CurlyBracketParser.VALID_DEFAULT_FILTERS = () => {
     if (typeof LuckyCase !== 'undefined') {
         return Object.keys(LuckyCase.CASES);

@@ -12,7 +12,8 @@
     "test_node": "yarn jasmine",
     "test_browser": "yarn build && yarn jasmine-browser-runner runSpecs --browser=chrome",
     "build": "node scripts/build.js",
-    "doc": "node scripts/doc.js"
+    "doc": "node scripts/doc.js",
+    "playground": "node playground.js"
   },
   "files": [
     "dist/curly-bracket-parser.js",

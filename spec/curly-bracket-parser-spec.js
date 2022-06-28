@@ -562,6 +562,50 @@ describe('CurlyBracketParser.parse', function () {
                 CurlyBracketParser.parse("Peter is {{3_}} years old.");
             }).toThrowError(UnresolvedVariablesError);
         });
+        it('embeds a single quoted string without content', function () {
+            expect(CurlyBracketParser.parse("This is a normal {{variable}} and a {{''}} one.", {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a single quoted string with white space content', function () {
+            expect(CurlyBracketParser.parse("This is a normal {{variable}} and a {{' '}} one.", {variable: 'variable'}))
+                .toEqual('This is a normal variable and a   one.');
+        });
+        it('embeds a double quoted string without content', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{""}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a double quoted string with white space content', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{" "}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a   one.');
+        });
+        it('embeds a single quoted string without content and filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{''|pascal_case}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a double quoted string without content and filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{""|pascal_case}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a empty content with filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{|pascal_case}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a empty content without filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a empty content with empty filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{variable}} and a {{|}} one.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable and a  one.');
+        });
+        it('embeds a single quoted content without filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{'variable'}}.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable.');
+        });
+        it('embeds a double quoted content without filter', function () {
+            expect(CurlyBracketParser.parse(`This is a normal {{"variable"}}.`, {variable: 'variable'}))
+                .toEqual('This is a normal variable.');
+        });
     });
 });
 
