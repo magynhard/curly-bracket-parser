@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.1.3
- * @date 2022-06-27T21:30:22.089Z
+ * @version 1.1.5
+ * @date 2022-06-28T10:53:48.065Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -51,7 +51,7 @@ class CurlyBracketParser {
             while (true) {
                 for (let string_var of self.variables(result_string)) {
                     const decoded_var = self.decodeVariable(string_var);
-                    const name = decoded_var.name;
+                    const name = !decoded_var.name && decoded_var.name !== 0 ? "''" : decoded_var.name;
                     const filter = decoded_var.filter;
                     let value = null;
                     const is_single_quoted = name.startsWith("'") && name.endsWith("'");
@@ -66,7 +66,7 @@ class CurlyBracketParser {
                     } else if (self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
                     }
-                    if (value) {
+                    if (value !== null) {
                         if (filter) value = self.processFilter(filter, value);
                         result_string = self._replaceAll(result_string, string_var, value);
                     }
@@ -489,14 +489,14 @@ class CurlyBracketParser {
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.1.3";
+CurlyBracketParser._version = "1.1.5";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
 
 // constants for formats
-CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]+)\|?([^{}\|]*)}}/gsm;
-CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]+}}/gsm;
+CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]*)\|?([^{}\|]*)}}/gsm;
+CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]*}}/gsm;
 CurlyBracketParser.VALID_DEFAULT_FILTERS = () => {
     if (typeof LuckyCase !== 'undefined') {
         return Object.keys(LuckyCase.CASES);
