@@ -78,7 +78,7 @@ Nested variables are supported as well:
 ```javascript
     const tmpl = "This is my template with {{my_nested_variable}}";
     const my_nested_variable = "my {{nested}} variable"; 
-    const parsed_tmpl = CurlyBracketParser.parse(tmpl, { my_nested_varialbe: my_nested_variable, nested: 'pizza'});
+    const parsed_tmpl = CurlyBracketParser.parse(tmpl, { my_nested_variable: my_nested_variable, nested: 'pizza'});
     // => "This is my template with my pizza variable"
 ```
 
