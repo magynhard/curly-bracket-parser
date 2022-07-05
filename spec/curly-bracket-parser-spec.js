@@ -509,13 +509,10 @@ describe('CurlyBracketParser.parse', function () {
 
 //----------------------------------------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------------------------------------
-
 describe('CurlyBracketParser.parse', function () {
     beforeEach(function () {
     });
-    describe('Using embedded string variables', function () {
+    describe('Using embedded variables', function () {
         it('embeds a single quoted string', function () {
             expect(CurlyBracketParser.parse("This is a normal {{variable}} and a {{'embedded'}} one.", {variable: 'variable'}))
                 .toEqual('This is a normal variable and a embedded one.');
