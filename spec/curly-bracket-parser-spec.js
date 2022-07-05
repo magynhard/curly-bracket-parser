@@ -603,6 +603,10 @@ describe('CurlyBracketParser.parse', function () {
             expect(CurlyBracketParser.parse(`This is a normal {{"variable"}}.`, {variable: 'variable'}))
                 .toEqual('This is a normal variable.');
         });
+        it('embeds a integer number written in hex', function () {
+            expect(CurlyBracketParser.parse("Peter is {{0x111}} years old.")).toEqual("Peter is 273 years old.");
+            expect(CurlyBracketParser.parse("Peter is {{0xFf}} years old.")).toEqual("Peter is 255 years old.");
+        });
     });
 });
 
