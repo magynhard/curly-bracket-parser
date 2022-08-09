@@ -34,7 +34,9 @@ Get the version of the used library
 <a name="CurlyBracketParser.parse"></a>
 
 ### CurlyBracketParser.parse(string, variables, options) &rarr; <code>string</code>
-Parse given string and replace the included variables by the given variables
+Parse given string and replace the included variables by the given variables.
+
+Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
 **Returns**: <code>string</code> - parsed string  
 
 | Param | Type | Description |
