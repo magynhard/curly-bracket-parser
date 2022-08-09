@@ -3268,10 +3268,10 @@ typifier@^0.0.10:
   dependencies:
     lucky-case "^1.1.3"
 
-typifier@^0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/typifier/-/typifier-0.0.12.tgz#55e3f10e91386cf332d0bede21b0f4bc9d1fb165"
-  integrity sha512-lYmadquipg+46GggMhWlyGmrCGTNjgXUH+g7Rz3i4raJzNdzL/w0JxmuJuLligqeSU6E00MC03rj1wAzSyJ7ug==
+typifier@^0.0.13:
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/typifier/-/typifier-0.0.13.tgz#48b1b5cac3dbec18dc1685d2f1bda784618b3094"
+  integrity sha512-GxCse7jlKWpGM2Lre5AUHRSzPE4B8gIiIQxDRKZKNjeurRxPaXb85W8N2zFvwQXyDfYwdC/muFTTzgFBvx9RUw==
   dependencies:
     lucky-case "^1.1.3"
 

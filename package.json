@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "lucky-case": "^1.1.8",
-    "typifier": "^0.0.12"
+    "typifier": "^0.0.13"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
