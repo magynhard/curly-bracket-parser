@@ -501,7 +501,7 @@ describe('CurlyBracketParser.parse', function () {
             };
             expect(CurlyBracketParser.parse(test_map['animal'], test_map)).toEqual('bug');
             expect(CurlyBracketParser.parse(test_map['this_animal'], test_map)).toEqual('This is a bug');
-            console.log(" If you see this for more than a few seconds and nothing more happens, this test is for sure failing in an endless loop!");
+            console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
             expect(CurlyBracketParser.parse(test_map['which_animal'], test_map)).toEqual('Which animal? This is a bug');
         });
     });
@@ -606,6 +606,32 @@ describe('CurlyBracketParser.parse', function () {
         it('embeds a integer number written in hex', function () {
             expect(CurlyBracketParser.parse("Peter is {{0x111}} years old.")).toEqual("Peter is 273 years old.");
             expect(CurlyBracketParser.parse("Peter is {{0xFf}} years old.")).toEqual("Peter is 255 years old.");
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------
+// Bugfix error when undefined (or NaN or Infinity or null) variables are passed
+//----------------------------------------------------------------------------------------------------
+describe('CurlyBracketParser.parse', function () {
+    beforeEach(function () {
+    });
+    describe('Using empty variables', function () {
+        it('uses an undefined variable parameter', function () {
+            console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
+            expect(CurlyBracketParser.parse("See my {{variable}} here!", { variable: undefined })).toEqual('See my  here!');
+        });
+        it('uses a null variable parameter', function () {
+            expect(CurlyBracketParser.parse("See my {{variable}} here!", { variable: null })).toEqual('See my  here!');
+        });
+        it('uses an NaN variable parameter', function () {
+            expect(CurlyBracketParser.parse("See my {{variable}} here!", { variable: NaN })).toEqual('See my  here!');
+        });
+        it('uses a Infinity variable parameter', function () {
+            expect(CurlyBracketParser.parse("See my {{variable}} here!", { variable: Infinity })).toEqual('See my  here!');
+        });
+        it('uses an empty string variable parameter', function () {
+            expect(CurlyBracketParser.parse("See my {{variable}} here!", { variable: '' })).toEqual('See my  here!');
         });
     });
 });

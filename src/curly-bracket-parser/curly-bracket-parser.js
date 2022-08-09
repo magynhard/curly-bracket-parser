@@ -30,7 +30,9 @@ class CurlyBracketParser {
     }
 
     /**
-     * Parse given string and replace the included variables by the given variables
+     * Parse given string and replace the included variables by the given variables.
+     *
+     * Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
      *
      * @param {string} string
      * @param {object<string, string>} variables <key <-> value>
@@ -47,6 +49,7 @@ class CurlyBracketParser {
         }
         options = Object.assign(default_options, options);
         variables = variables || {};
+        variables = self._convertEmptyVariablesToEmptyString(variables);
         let result_string = string;
         if (self.isAnyVariableIncluded(string)) {
             while (true) {
@@ -62,7 +65,7 @@ class CurlyBracketParser {
                         value = name.substring(1, name.length - 1);
                     } else if (Typifier.isNumberString(name)) {
                         value = eval(name);
-                    } else if (variables[name]) {
+                    } else if (typeof variables[name] !== 'undefined') {
                         value = variables[name];
                     } else if (self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
@@ -480,6 +483,25 @@ class CurlyBracketParser {
     static _runByBrowser() {
         const self = CurlyBracketParser;
         return !self._runByNode();
+    }
+
+    //----------------------------------------------------------------------------------------------------
+
+    /**
+     * Convert values inside a object of type undefined, NaN, Infinity or null to an empty string
+     * @param {Object} object
+     * @returns {Object}
+     * @private
+     */
+    static _convertEmptyVariablesToEmptyString(object) {
+        const self = CurlyBracketParser;
+        let copy = Object.assign({}, object);
+        copy.eachWithIndex((key, value, index) => {
+           if(Typifier.isUndefined(value) || Typifier.isNaN(value) || Typifier.isNull(value) || Typifier.isInfinity(value)) {
+               copy[key] = '';
+           }
+        });
+        return copy;
     }
 
     //----------------------------------------------------------------------------------------------------
