@@ -1,6 +1,6 @@
 {
   "name": "curly-bracket-parser",
-  "version": "1.1.7",
+  "version": "1.1.10",
   "description": "Simple parser to replace variables inside templates/strings and files for node js and browser.",
   "exports": {
     ".": "./src/curly-bracket-parser/curly-bracket-parser.js",
@@ -27,7 +27,8 @@
   },
   "dependencies": {
     "lucky-case": "^1.1.8",
-    "typifier": "^0.0.13"
+    "typifier": "^0.0.13",
+    "ruby-nice": "^0.1.12"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -39,7 +40,6 @@
     "jasmine-browser-runner": "^1.1.0",
     "jsdoc": "^3.6.10",
     "jsdoc-to-markdown": "^7.1.1",
-    "ruby-nice": "^0.1.9",
     "tmp": "^0.2.1",
     "uglify-js": "^3.16.1",
     "yarn-upgrade-all": "^0.7.1"

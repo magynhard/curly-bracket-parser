@@ -59,6 +59,7 @@ const builds = {
             './src/curly-bracket-parser/custom-errors/variable-already-registered-error.js',
             './node_modules/lucky-case/dist/lucky-case.js',
             './node_modules/typifier/dist/typifier.js',
+            './node_modules/ruby-nice/dist/ruby-nice.js',
     ]}
 }
 

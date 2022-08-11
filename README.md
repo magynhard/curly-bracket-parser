@@ -45,7 +45,7 @@ npm install curly-bracket-parser
 
 There are two versions, default and bundled.
 
-* The ***bundled version*** has [LuckyCase](https://github.com/magynhard/lucky-case) and its cases as default filters included. The dependency [Typifier](https://github.com/magynhard/typifier) is included as well. (`curly-bracket-parser.bundle.js` and `curly-bracket-parser.bundle.min.js`)
+* The ***bundled version*** has [LuckyCase](https://github.com/magynhard/lucky-case) and its cases as default filters included. The dependencies [Typifier](https://github.com/magynhard/typifier) and [RubyNice](https://github.com/magynhard/ruby-nice) are included as well. (`curly-bracket-parser.bundle.js` and `curly-bracket-parser.bundle.min.js`)
 * The ***default version*** comes without any predefined default filters, so you can only use your custom filters. But you need then to add [Typifier](https://github.com/magynhard/typifier) as isolated dependency as well. You can optionally embed the original LuckyCase to the document as well. CurlyBracketParser will recognize, if LuckyCase is available and then provide them as default filters. So if you don't need the LuckyCase case filters, you get a much smaller file size without the bundle. (`curly-bracket-parser.js` and `curly-bracket-parser.min.js`)
 
 Download the `curly-bracket-parser.min.js` or `curly-bracket-parser.bundle.min.js` at the [release page](https://github.com/magynhard/curly-bracket-parser/releases) and
