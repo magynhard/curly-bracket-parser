@@ -36,7 +36,7 @@ class CurlyBracketParser {
      * Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
      *
      * @param {string} string
-     * @param {object<string, string>} variables <key <-> value>
+     * @param {Object<string, string>} variables <key <-> value>
      * @param {object} options
      * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
@@ -100,7 +100,7 @@ class CurlyBracketParser {
      * Parse given path content and replace the included variables by the given variables
      *
      * @param {string} path to file to parse
-     * @param {object<string, string>} variables <key <-> value>
+     * @param {Object<string, string>} variables <key <-> value>
      * @param {object} options
      * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
@@ -172,7 +172,7 @@ class CurlyBracketParser {
      * Only available when running on node js (not in browser)
      *
      * @param {string} path to file to parse
-     * @param {object<string, string>} variables <key <-> value>
+     * @param {Object<string, string>} variables <key <-> value>
      * @param {object} options
      * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
