@@ -8,6 +8,7 @@ if (typeof require === 'function' && typeof module !== 'undefined' && module.exp
     var VariableAlreadyRegisteredError = require('./custom-errors/variable-already-registered-error.js');
     var LuckyCase = require('lucky-case');
     var Typifier = require('typifier');
+    require('ruby-nice/object');
 }
 
 //<!-- /MODULE -->//
