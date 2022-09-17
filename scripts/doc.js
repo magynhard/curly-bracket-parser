@@ -7,7 +7,7 @@ const {exec} = require("child_process");
 
 function generateDoc() {
     const doc_file = './doc/curly-bracket-parser.jsdoc.md';
-    exec(`./node_modules/jsdoc-to-markdown/bin/cli.js --files ./src/curly-bracket-parser/curly-bracket-parser.js > ${doc_file}`, (error, stdout, stderr) => {
+    exec(`node ./node_modules/jsdoc-to-markdown/bin/cli.js --files ./src/curly-bracket-parser/curly-bracket-parser.js > ${doc_file}`, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
         }
