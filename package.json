@@ -1,6 +1,6 @@
 {
   "name": "curly-bracket-parser",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Simple parser to replace variables inside templates/strings and files for node js and browser.",
   "exports": {
     ".": "./src/curly-bracket-parser/curly-bracket-parser.js",
@@ -13,7 +13,7 @@
     "test_node_imports": "yarn jasmine spec/imports/curly-bracket-parser-spec.cjs && yarn jasmine spec/imports/curly-bracket-parser-spec.mjs",
     "test_browser": "yarn build && yarn jasmine-browser-runner runSpecs --browser=chrome",
     "build": "yarn doc && node scripts/build.js",
-    "doc": "node scripts/doc.js",
+    "doc": "node ./scripts/doc.js",
     "playground": "node playground.js"
   },
   "files": [

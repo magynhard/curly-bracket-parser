@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.2.1
- * @date 2022-08-23T10:54:02.148Z
+ * @version 1.2.2
+ * @date 2022-09-17T15:15:13.667Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -34,21 +34,23 @@ class CurlyBracketParser {
      * Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
      *
      * @param {string} string
-     * @param {object<string, string>} variables <key <-> value>
-     * @param {object} options
+     * @param {Object<string, string>} variables <key <-> value>
+     * @param {Object} options
      * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
      * @returns {string} parsed string
      */
     static parse(string, variables = {}, options = {unresolved_vars: "throw", replace_pattern: "##$1##"}) {
         const self = CurlyBracketParser;
+        if(!Typifier.isString(string)) {
+            throw new Error(`Given parameter 'string' must be of type 'string'! It is of type ${Typifier.getType(string)}: ${string}\n`);
+        }
         options = options ? options : {};
         const default_options = {
             unresolved_vars: "throw", replace_pattern: "##$1##"
         }
         options = Object.assign(default_options, options);
         variables = variables || {};
-        variables = self._convertEmptyVariablesToEmptyString(variables);
         let result_string = string;
         if (self.isAnyVariableIncluded(string)) {
             while (true) {
@@ -64,8 +66,14 @@ class CurlyBracketParser {
                         value = name.substring(1, name.length - 1);
                     } else if (Typifier.isNumberString(name)) {
                         value = eval(name);
-                    } else if (typeof variables[name] !== 'undefined') {
-                        value = variables[name];
+                    } else if (variables.hasOwnProperty(name)) {
+                        const current_value = variables[name];
+                        // Convert empty values into empty string
+                        if(Typifier.isUndefined(current_value) || Typifier.isNaN(current_value) || Typifier.isNull(current_value) || Typifier.isInfinity(current_value)) {
+                            value = ''
+                        } else {
+                            value = variables[name];
+                        }
                     } else if (self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
                     }
@@ -98,8 +106,8 @@ class CurlyBracketParser {
      * Parse given path content and replace the included variables by the given variables
      *
      * @param {string} path to file to parse
-     * @param {object<string, string>} variables <key <-> value>
-     * @param {object} options
+     * @param {Object<string, string>} variables <key <-> value>
+     * @param {Object} options
      * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
      * @param {function} options.success only affects when running inside a browser. If given, the file of the given path will be requested asynchronous and the parsed string will be passed to this function.
@@ -170,8 +178,8 @@ class CurlyBracketParser {
      * Only available when running on node js (not in browser)
      *
      * @param {string} path to file to parse
-     * @param {object<string, string>} variables <key <-> value>
-     * @param {object} options
+     * @param {Object<string, string>} variables <key <-> value>
+     * @param {Object} options
      * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
      * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
      * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
@@ -486,32 +494,13 @@ class CurlyBracketParser {
 
     //----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert values inside a object of type undefined, NaN, Infinity or null to an empty string
-     * @param {Object} object
-     * @returns {Object}
-     * @private
-     */
-    static _convertEmptyVariablesToEmptyString(object) {
-        const self = CurlyBracketParser;
-        let copy = Object.assign({}, object);
-        copy.eachWithIndex((key, value, index) => {
-           if(Typifier.isUndefined(value) || Typifier.isNaN(value) || Typifier.isNull(value) || Typifier.isInfinity(value)) {
-               copy[key] = '';
-           }
-        });
-        return copy;
-    }
-
-    //----------------------------------------------------------------------------------------------------
-
 }
 
 /**
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.2.1";
+CurlyBracketParser._version = "1.2.2";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
