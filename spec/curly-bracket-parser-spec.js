@@ -637,3 +637,27 @@ describe('CurlyBracketParser.parse', function () {
 });
 
 //----------------------------------------------------------------------------------------------------
+// Performance test, thanks to Manfred Steiniger for reporting
+//----------------------------------------------------------------------------------------------------
+describe('CurlyBracketParser.parse', function () {
+    beforeEach(function () {
+    });
+    describe('Check the parse performance', function () {
+        it('parses 25_000 templates below 1 second', function () {
+            let variables = {};
+            for(let i = 0; i < 250; ++i) {
+                variables["variable.key.performance.test" + i] = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            }
+            const benchmark_begin = Date.now();
+            for(let i = 0; i < 25_000; ++i) {
+                let template = ["{{variable}}",'','0',"{{'SomeString'|dash_case}}"].getSample();
+                CurlyBracketParser.parse(template, variables, { unresolved_vars: 'replace' });
+            }
+            const benchmark_end = Date.now();
+            const duration_ms = benchmark_end - benchmark_begin;
+            expect(duration_ms).toBeLessThan(1000, `Benchmark should have been taken less than 1000ms but took ${duration_ms}ms`);
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------

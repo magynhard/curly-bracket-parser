@@ -1,11 +1,7 @@
 <a name="CurlyBracketParser"></a>
 
 ## CurlyBracketParser
-CurlyBracketParser
-
-Parse variables with curly brackets within templates/strings or files
-
-Use filters for special cases
+CurlyBracketParserParse variables with curly brackets within templates/strings or filesUse filters for special cases
 
 * [CurlyBracketParser](#CurlyBracketParser)
     * [.getVersion()](#CurlyBracketParser.getVersion) &rarr; <code>string</code>
@@ -34,16 +30,14 @@ Get the version of the used library
 <a name="CurlyBracketParser.parse"></a>
 
 ### CurlyBracketParser.parse(string, variables, options) &rarr; <code>string</code>
-Parse given string and replace the included variables by the given variables.
-
-Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
+Parse given string and replace the included variables by the given variables.Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
 **Returns**: <code>string</code> - parsed string  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | string | <code>string</code> |  |
-| variables | <code>object.&lt;string, string&gt;</code> | <key <-> value> |
-| options | <code>object</code> |  |
+| variables | <code>Object.&lt;string, string&gt;</code> | <key <-> value> |
+| options | <code>Object</code> |  |
 | options.unresolved_vars | <code>&#x27;throw&#x27;</code> \| <code>&#x27;keep&#x27;</code> \| <code>&#x27;replace&#x27;</code> | 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found. |
 | options.replace_pattern | <code>string</code> | pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables. |
 
@@ -56,8 +50,8 @@ Parse given path content and replace the included variables by the given variabl
 | Param | Type | Description |
 | --- | --- | --- |
 | path | <code>string</code> | to file to parse |
-| variables | <code>object.&lt;string, string&gt;</code> | <key <-> value> |
-| options | <code>object</code> |  |
+| variables | <code>Object.&lt;string, string&gt;</code> | <key <-> value> |
+| options | <code>Object</code> |  |
 | options.unresolved_vars | <code>&#x27;throw&#x27;</code> \| <code>&#x27;keep&#x27;</code> \| <code>&#x27;replace&#x27;</code> | 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found. |
 | options.replace_pattern | <code>string</code> | pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables. |
 | options.success | <code>function</code> | only affects when running inside a browser. If given, the file of the given path will be requested asynchronous and the parsed string will be passed to this function. |
@@ -66,17 +60,14 @@ Parse given path content and replace the included variables by the given variabl
 <a name="CurlyBracketParser.parseFileWrite"></a>
 
 ### CurlyBracketParser.parseFileWrite(path, variables, options) &rarr; <code>string</code> \| <code>null</code>
-Parse given path content and replace the included variables by the given variables
-Alias method of .parseFile with option write: true
-
-Only available when running on node js (not in browser)
+Parse given path content and replace the included variables by the given variablesAlias method of .parseFile with option write: trueOnly available when running on node js (not in browser)
 **Returns**: <code>string</code> \| <code>null</code> - parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | path | <code>string</code> | to file to parse |
-| variables | <code>object.&lt;string, string&gt;</code> | <key <-> value> |
-| options | <code>object</code> |  |
+| variables | <code>Object.&lt;string, string&gt;</code> | <key <-> value> |
+| options | <code>Object</code> |  |
 | options.unresolved_vars | <code>&#x27;throw&#x27;</code> \| <code>&#x27;keep&#x27;</code> \| <code>&#x27;replace&#x27;</code> | 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found. |
 | options.replace_pattern | <code>string</code> | pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables. |
 
@@ -128,8 +119,7 @@ Check if a given filter is valid
 <a name="CurlyBracketParser.registerDefaultVar"></a>
 
 ### CurlyBracketParser.registerDefaultVar(name, var_function, options) &rarr; <code>function</code>
-Register a default variable to be replaced automatically by the given block value in future
-If the variable exists already, it will throw an VariableAlreadyRegisteredError
+Register a default variable to be replaced automatically by the given block value in futureIf the variable exists already, it will throw an VariableAlreadyRegisteredError
 **Returns**: <code>function</code> - var_function  
 
 | Param | Type | Description |
