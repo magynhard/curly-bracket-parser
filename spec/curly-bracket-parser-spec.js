@@ -470,23 +470,6 @@ describe('CurlyBracketParser.decodedVariables', function () {
 });
 
 //----------------------------------------------------------------------------------------------------
-
-describe('CurlyBracketParser.includesOneVariableOf', function () {
-    beforeEach(function () {
-    });
-    describe('includes one of the given variables in the given string', function () {
-        it('includes all of the three variables', function () {
-            const string = 'This is my {{var2}} super string, containing {{count2|filter_some}} variables and a lot of {{fun3}}';
-            expect(CurlyBracketParser.includesOneVariableOf(['var2', 'count2', 'fun3'], string)).toEqual(true);
-            expect(CurlyBracketParser.includesOneVariableOf(['var', 'count', 'fun'], string)).toEqual(false);
-            expect(CurlyBracketParser.includesOneVariableOf(['var2'], string)).toEqual(true);
-            expect(CurlyBracketParser.includesOneVariableOf(['count2'], string)).toEqual(true);
-            expect(CurlyBracketParser.includesOneVariableOf(['fun3'], string)).toEqual(true);
-        });
-    });
-});
-
-//----------------------------------------------------------------------------------------------------
 // Bugfix endless loop when using nested variables
 //----------------------------------------------------------------------------------------------------
 describe('CurlyBracketParser.parse', function () {
@@ -642,7 +625,7 @@ describe('CurlyBracketParser.parse', function () {
 describe('CurlyBracketParser.parse', function () {
     beforeEach(function () {
     });
-    describe('Check the parse performance', function () {
+    describe('Check the common parse performance', function () {
         it('parses 25_000 templates below 1 second', function () {
             let variables = {};
             for(let i = 0; i < 250; ++i) {
@@ -655,9 +638,141 @@ describe('CurlyBracketParser.parse', function () {
             }
             const benchmark_end = Date.now();
             const duration_ms = benchmark_end - benchmark_begin;
+            console.log("Common parse benchmark took " + duration_ms + "ms.");
             expect(duration_ms).toBeLessThan(1000, `Benchmark should have been taken less than 1000ms but took ${duration_ms}ms`);
         });
     });
 });
 
 //----------------------------------------------------------------------------------------------------
+
+describe('CurlyBracketParser._isTreeVariableString', function () {
+    beforeEach(function () {
+    });
+    describe('Check tree variable string', function () {
+        it('detects valid tree variable strings', function () {
+            const variables = [
+              'this.is.valid',
+              '1this8.8is8.8valid8',
+              'lökijThis8._is8.8valid8_',
+              '_Thisss8.is.valid',
+            ];
+            variables.forEach((val) => {
+                expect(CurlyBracketParser._isTreeVariableString(val)).toEqual(true);
+            });
+        });
+        it('detects invalid tree variable strings', function () {
+            const variables = [
+              'this_is_not_a_tree',
+              'this.has.two..dots',
+              '.dot.at.the.beginning',
+              'dot.at.the.end.',
+              '.dot.at.the.end.and.begin.',
+              '..',
+              '...',
+              '.',
+            ];
+            variables.forEach((val) => {
+                expect(CurlyBracketParser._isTreeVariableString(val)).toEqual(false);
+            });
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------
+
+describe('CurlyBracketParser.parse', function () {
+    beforeEach(function () {
+    });
+    describe('Using tree variables', function () {
+        it('uses valid tree variable', function () {
+            const variables = {
+                var1: {
+                    sub1: {
+                        last: "tree value"
+                    }
+                }
+            }
+            expect(CurlyBracketParser.parse("See my {{var1.sub1.last}} here!", variables)).toEqual('See my tree value here!');
+        });
+        it('uses a non existing tree variable', function () {
+            const variables = {
+                var1: {
+                    sub1: {
+                        last: "tree value"
+                    }
+                }
+            }
+            expect(() => {
+                CurlyBracketParser.parse("See my {{does.not.exist}} here!", variables);
+            }).toThrowError(UnresolvedVariablesError);
+            expect(CurlyBracketParser.parse("See my {{does.not.exist}} here!", variables, { unresolved_vars: "keep"}))
+                .toEqual("See my {{does.not.exist}} here!");
+        });
+        it('uses a non existing tree sub variable', function () {
+            const variables = {
+                var1: {
+                    sub1: {
+                        last: "tree value"
+                    }
+                }
+            }
+            expect(() => {
+                CurlyBracketParser.parse("See my {{var1.does.not.exist}} here!", variables);
+            }).toThrowError(UnresolvedVariablesError);
+        });
+        it('uses a tree variable containing a object', function () {
+            const variables = {
+                first: {
+                    second: {
+                        third: "third value"
+                    }
+                }
+            }
+            expect(CurlyBracketParser.parse("See my {{first.second}} here!", variables)).toEqual('See my [object Object] here!');
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------
+// BENCHMARK PLAYGROUND
+//----------------------------------------------------------------------------------------------------
+
+describe('CurlyBracketParser benchmark playground', function () {
+    beforeEach(function () {
+    });
+    describe('benchmark two functions', function () {
+        it('benchmarks _extractTreeVariable', function () {
+            return; // SKIP BENCHMARK
+            let variables = { test: {}};
+            variables.test.one = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            variables.test.two = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            variables.test.three = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            const benchmark_begin = Date.now();
+            for(let i = 0; i < 250_000; ++i) {
+                let name = ['test.one','test.two','test.three'].getSample();
+                CurlyBracketParser._extractTreeVariable(variables, name);
+            }
+            const benchmark_end = Date.now();
+            const duration_ms = benchmark_end - benchmark_begin;
+            console.log("Benchmark for _extractTreeVariable took " + duration_ms + "ms.");
+            expect(duration_ms).toBeLessThan(1000, `Benchmark should have been taken less than 1000ms but took ${duration_ms}ms`);
+        });
+        it('benchmarks _extractTreeVariable', function () {
+            return; // SKIP BENCHMARK
+            let variables = { test: {}};
+            variables.test.one = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            variables.test.two = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            variables.test.three = [1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample();
+            const benchmark_begin = Date.now();
+            for(let i = 0; i < 250_000; ++i) {
+                let name = ['test.one','test.two','test.three'].getSample();
+                CurlyBracketParser._extractTreeVariable(variables, name);
+            }
+            const benchmark_end = Date.now();
+            const duration_ms = benchmark_end - benchmark_begin;
+            console.log("Benchmark for _extractTreeVariable took " + duration_ms + "ms.");
+            expect(duration_ms).toBeLessThan(1000, `Benchmark should have been taken less than 1000ms but took ${duration_ms}ms`);
+        });
+    });
+});

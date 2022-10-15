@@ -6,11 +6,18 @@
 
 > Javascript library providing a simple parser to replace curly brackets `{{like_this}}` inside strings like URLs, texts or even files (node only) easily. Available for node js and browser!
 
+#### Custom filters
+
 Additional support for build-in filters and custom filters make them more powerful. `{{example|my_filter}}`
 
 [LuckyCase](https://github.com/magynhard/lucky-case) case formats are supported as default filters by node js dependency, in browser optionally if `LuckyCase` is loaded as well (bundled version).
 
-It is a port my ruby gem [curly_bracket_parser](https://github.com/magynhard/lucky_case).
+#### Variable trees
+
+Support for variable trees, e.g.: `{{my.tree.variable}}`
+
+#### Ruby version
+It is a port my ruby gem [curly_bracket_parser](https://github.com/magynhard/lucky_case), but got already some additional features.
 
 
 
@@ -74,7 +81,7 @@ You can either parse variables inside strings or even directly in files.
     // => "https://my-domain.com/items/123"
 ```
 
-Nested variables are supported as well:
+Nested variables inside variables are supported as well:
 ```javascript
     const tmpl = "This is my template with {{my_nested_variable}}";
     const my_nested_variable = "my {{nested}} variable"; 

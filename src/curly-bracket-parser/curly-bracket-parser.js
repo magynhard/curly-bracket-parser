@@ -1,16 +1,19 @@
 //<!-- MODULE -->//
 if (typeof require === 'function' && typeof module !== 'undefined' && module.exports) {
+    // custom errors
     var FileNotRetrievedError = require('./custom-errors/file-not-retrieved-error.js');
     var FilterAlreadyRegisteredError = require('./custom-errors/filter-already-registered-error.js');
     var InvalidFilterError = require('./custom-errors/invalid-filter-error.js');
+    var InvalidTreeVariableStringError = require('./custom-errors/invalid-tree-variable-string-error.js');
     var InvalidVariableError = require('./custom-errors/invalid-variable-error.js');
+    var TreeVariableNotFoundError = require('./custom-errors/tree-variable-not-found-error.js');
     var UnresolvedVariablesError = require('./custom-errors/unresolved-variables-error.js');
     var VariableAlreadyRegisteredError = require('./custom-errors/variable-already-registered-error.js');
+    //
     var LuckyCase = require('lucky-case');
     var Typifier = require('typifier');
     require('ruby-nice/object');
 }
-
 //<!-- /MODULE -->//
 /**
  * CurlyBracketParser
@@ -68,13 +71,18 @@ class CurlyBracketParser {
                         value = name.substring(1, name.length - 1);
                     } else if (Typifier.isNumberString(name)) {
                         value = eval(name);
-                    } else if (variables.hasOwnProperty(name)) {
-                        const current_value = variables[name];
+                    } else if (variables.hasOwnProperty(name) || (self._isTreeVariableString(name) && self._hasTreeProperty(variables, name))) {
+                        let current_value = null;
+                        if(self._isTreeVariableString(name)) {
+                            current_value = self._extractTreeVariable(variables, name);
+                        } else {
+                            current_value = variables[name];
+                        }
                         // Convert empty values into empty string
                         if(Typifier.isUndefined(current_value) || Typifier.isNaN(current_value) || Typifier.isNull(current_value) || Typifier.isInfinity(current_value)) {
                             value = ''
                         } else {
-                            value = variables[name];
+                            value = current_value;
                         }
                     } else if (self.isRegisteredDefaultVar(name)) {
                         value = self.processDefaultVar(name);
@@ -496,13 +504,92 @@ class CurlyBracketParser {
 
     //----------------------------------------------------------------------------------------------------
 
+    /**
+     * Check if the given string is a valid tree variable string.
+     * That means it must include at least one dot, that must be prepended and appended by a character.
+     *
+     * @example
+     *  "person.data.first_name"
+     *  => true
+     *
+     * @param {string} name
+     * @param {{ throw_error_on_false: boolean }} options
+     * @returns {boolean}
+     * @private
+     */
+    static _isTreeVariableString(name, options = { throw_error_on_false: false }) {
+        const tree_variable_string_regex = /^[^\.]([^\.]*\.[^\.]+)+$/i;
+        const is_valid = !!name.trim().match(tree_variable_string_regex);
+        if(!is_valid && options && options.throw_error_on_false) {
+            throw new InvalidTreeVariableStringError(name);
+        }
+        return is_valid;
+    }
+
+    /**
+     * Extract variable value by tree variable string
+     *
+     * @example
+     * function ({person: { data: { first_name: 'John'}}}, 'person.data.first_name')
+     *  => 'John'
+     *
+     * @param {Object} variables
+     * @param {string} name
+     * @returns {any}
+     * @private
+     */
+    static _extractTreeVariable(variables, name) {
+        const self = CurlyBracketParser;
+        self._isTreeVariableString(name, { throw_error_on_false: true });
+        const levels = name.split('.');
+        let dig_value = variables;
+        for(let i = 0; i < levels.length; ++i) {
+            if(dig_value.hasOwnProperty(levels[i])) {
+                dig_value = dig_value[levels[i]];
+            } else {
+                throw new TreeVariableNotFoundError(`Tree variable not found: '${name}'`);
+            }
+        }
+        return dig_value;
+    }
+
+    /**
+     * Check if the given tree property is defined
+     *
+     * @example
+     *   ({ first: { second: 123 } }, 'first.second')
+     *   => true
+     *
+     * @example
+     *  ({ first: { second: 123 } }, 'first.does.not.exist')
+     *   => false
+     *
+     * @param {Object} variables
+     * @param {string} name
+     * @returns {boolean}
+     * @private
+     */
+    static _hasTreeProperty(variables, name) {
+        const self = CurlyBracketParser;
+        self._isTreeVariableString(name, { throw_error_on_false: true });
+        try {
+            self._extractTreeVariable(variables, name);
+            return true;
+        } catch(e) {
+            if(e instanceof TreeVariableNotFoundError) {
+                return false;
+            } else {
+                throw e;
+            }
+        }
+    }
 }
 
 /**
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.2.2";
+CurlyBracketParser._version = "1.2.5";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
