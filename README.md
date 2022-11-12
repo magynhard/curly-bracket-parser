@@ -17,7 +17,7 @@ Additional support for build-in filters and custom filters make them more powerf
 Support for variable trees, e.g.: `{{my.tree.variable}}`
 
 #### Ruby version
-It is a port my ruby gem [curly_bracket_parser](https://github.com/magynhard/lucky_case), but got already some additional features.
+It is a port my ruby gem [curly_bracket_parser](https://github.com/magynhard/curly_bracket_parser), but got already some additional features.
 
 
 
