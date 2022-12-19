@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.3.1
- * @date 2022-10-15T11:08:59.221Z
+ * @version 1.3.3
+ * @date 2022-12-19T16:53:00.221Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -648,7 +648,6 @@ class TreeVariableNotFoundError extends Error {
 		this.name = "TreeVariableNotFoundError";
 	}
 }
-
 
 class VariableAlreadyRegisteredError extends Error {
 	constructor(message) {
