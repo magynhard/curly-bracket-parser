@@ -19,565 +19,565 @@
  *
  */
 class CurlyBracketParser {
-    /**
-     * Get the version of the used library
-     * @returns {string}
-     */
-    static getVersion() {
-        const self = CurlyBracketParser;
-        return self._version;
-    }
+	/**
+	 * Get the version of the used library
+	 * @returns {string}
+	 */
+	static getVersion() {
+		const self = CurlyBracketParser;
+		return self._version;
+	}
 
-    /**
-     * Parse given string and replace the included variables by the given variables.
-     *
-     * Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
-     *
-     * @param {string} string
-     * @param {Object<string, string>} variables <key <-> value>
-     * @param {Object} options
-     * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
-     * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
-     * @returns {string} parsed string
-     */
-    static parse(string, variables = {}, options = {unresolved_vars: "throw", replace_pattern: "##$1##"}) {
-        const self = CurlyBracketParser;
-        if(!Typifier.isString(string)) {
-            throw new Error(`Given parameter 'string' must be of type 'string'! It is of type ${Typifier.getType(string)}: ${string}\n`);
-        }
-        options = options ? options : {};
-        const default_options = {
-            unresolved_vars: "throw", replace_pattern: "##$1##"
-        }
-        options = Object.assign(default_options, options);
-        variables = variables || {};
-        let result_string = string;
-        if (self.isAnyVariableIncluded(string)) {
-            while (true) {
-                for (let string_var of self.variables(result_string)) {
-                    const decoded_var = self.decodeVariable(string_var);
-                    const name = !decoded_var.name && decoded_var.name !== 0 ? "''" : decoded_var.name;
-                    const filter = decoded_var.filter;
-                    let value = null;
-                    const is_single_quoted = name.startsWith("'") && name.endsWith("'");
-                    const is_double_quoted = name.startsWith('"') && name.endsWith('"');
-                    // When the name itself is quoted as string or is a number, we use it as a value itself
-                    if (is_double_quoted || is_single_quoted) {
-                        value = name.substring(1, name.length - 1);
-                    } else if (Typifier.isNumberString(name)) {
-                        value = eval(name);
-                    } else if (variables.hasOwnProperty(name) || (self._isTreeVariableString(name) && self._hasTreeProperty(variables, name))) {
-                        let current_value = null;
-                        if(self._isTreeVariableString(name)) {
-                            current_value = self._extractTreeVariable(variables, name);
-                        } else {
-                            current_value = variables[name];
-                        }
-                        // Convert empty values into empty string
-                        if(Typifier.isUndefined(current_value) || Typifier.isNaN(current_value) || Typifier.isNull(current_value) || Typifier.isInfinity(current_value)) {
-                            value = ''
-                        } else {
-                            value = current_value;
-                        }
-                    } else if (self.isRegisteredDefaultVar(name)) {
-                        value = self.processDefaultVar(name);
-                    }
-                    if (value !== null) {
-                        if (filter) value = self.processFilter(filter, value);
-                        result_string = self._replaceAll(result_string, string_var, value);
-                    }
-                }
-                if (!(self.isAnyVariableIncluded(result_string) && self.includesOneVariableOf(Object.keys(variables), result_string))) {
-                    break;
-                }
-            }
-            switch (options.unresolved_vars) {
-                case "throw":
-                    if (self.isAnyVariableIncluded(result_string)) {
-                        throw new UnresolvedVariablesError(`There are unresolved variables in the given string: ${self.variables(result_string)}`);
-                    }
-                    break;
-                case "replace":
-                    result_string = result_string.replace(self.VARIABLE_DECODER_REGEX, options.replace_pattern);
-                    break;
-            }
-        }
-        return result_string;
-    }
+	/**
+	 * Parse given string and replace the included variables by the given variables.
+	 *
+	 * Given variable values of type null, undefined, NaN or Infinity are processed as empty strings.
+	 *
+	 * @param {string} string
+	 * @param {Object<string, string>} variables <key <-> value>
+	 * @param {Object} options
+	 * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
+	 * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
+	 * @returns {string} parsed string
+	 */
+	static parse(string, variables = {}, options = { unresolved_vars: "throw", replace_pattern: "##$1##" }) {
+		const self = CurlyBracketParser;
+		if (!Typifier.isString(string)) {
+			throw new Error(`Given parameter 'string' must be of type 'string'! It is of type ${Typifier.getType(string)}: ${string}\n`);
+		}
+		options = options ? options : {};
+		const default_options = {
+			unresolved_vars: "throw", replace_pattern: "##$1##"
+		}
+		options = Object.assign(default_options, options);
+		variables = variables || {};
+		let result_string = string;
+		if (self.isAnyVariableIncluded(string)) {
+			while (true) {
+				for (let string_var of self.variables(result_string)) {
+					const decoded_var = self.decodeVariable(string_var);
+					const name = !decoded_var.name && decoded_var.name !== 0 ? "''" : decoded_var.name;
+					const filter = decoded_var.filter;
+					let value = null;
+					const is_single_quoted = name.startsWith("'") && name.endsWith("'");
+					const is_double_quoted = name.startsWith('"') && name.endsWith('"');
+					// When the name itself is quoted as string or is a number, we use it as a value itself
+					if (is_double_quoted || is_single_quoted) {
+						value = name.substring(1, name.length - 1);
+					} else if (Typifier.isNumberString(name)) {
+						value = eval(name);
+					} else if (variables.hasOwnProperty(name) || (self._isTreeVariableString(name) && self._hasTreeProperty(variables, name))) {
+						let current_value = null;
+						if (self._isTreeVariableString(name)) {
+							current_value = self._extractTreeVariable(variables, name);
+						} else {
+							current_value = variables[name];
+						}
+						// Convert empty values into empty string
+						if (Typifier.isUndefined(current_value) || Typifier.isNaN(current_value) || Typifier.isNull(current_value) || Typifier.isInfinity(current_value)) {
+							value = ''
+						} else {
+							value = current_value;
+						}
+					} else if (self.isRegisteredDefaultVar(name)) {
+						value = self.processDefaultVar(name);
+					}
+					if (value !== null) {
+						if (filter) value = self.processFilter(filter, value);
+						result_string = self._replaceAll(result_string, string_var, value);
+					}
+				}
+				if (!(self.isAnyVariableIncluded(result_string) && self.includesOneVariableOf(Object.keys(variables), result_string))) {
+					break;
+				}
+			}
+			switch (options.unresolved_vars) {
+				case "throw":
+					if (self.isAnyVariableIncluded(result_string)) {
+						throw new UnresolvedVariablesError(`There are unresolved variables in the given string: ${self.variables(result_string)}`);
+					}
+					break;
+				case "replace":
+					result_string = result_string.replace(self.VARIABLE_DECODER_REGEX, options.replace_pattern);
+					break;
+			}
+		}
+		return result_string;
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Parse given path content and replace the included variables by the given variables
-     *
-     * @param {string} path to file to parse
-     * @param {Object<string, string>} variables <key <-> value>
-     * @param {Object} options
-     * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
-     * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
-     * @param {function} options.success only affects when running inside a browser. If given, the file of the given path will be requested asynchronous and the parsed string will be passed to this function.
-     * @param {boolean} options.write write parsed content of the file directly into the file. Only available when running by node js.
-     * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
-     */
-    static parseFile(path, variables = {}, options = {
-        unresolved_vars: "throw",
-        replace_pattern: "##$1##",
-        success: null,
-        write: false
-    }) {
-        const self = CurlyBracketParser;
-        const default_options = {
-            unresolved_vars: "throw", replace_pattern: "##$1##", success: null, write: false
-        }
-        options = options ? options : {};
-        options = Object.assign(default_options, options);
-        variables = variables || {};
-        if (self._runByNode()) {
-            const fs = require("fs");
-            const file_content = fs.readFileSync(path, 'utf-8').toString();
-            const parsed_content = self.parse(file_content, variables, options);
-            if (options.write) {
-                fs.writeFileSync(path, parsed_content);
-            }
-            return parsed_content;
-        } else if (self._runByBrowser()) {
-            const error_message = `Could not retrieve file '${path}' by GET.`;
-            if (options.success && typeof options.success === 'function') {
-                // async
-                const request = new XMLHttpRequest();
-                request.open('GET', path, true);
-                request.onload = function (e) {
-                    if (request.readyState === 4) {
-                        if (request.status === 200) {
-                            const parsed_content = self.parse(request.responseText, variables, options);
-                            options.success(parsed_content);
-                        } else {
-                            throw new FileNotRetrievedError(error_message + "\n" + request.statusText);
-                        }
-                    } else {
-                        throw new FileNotRetrievedError(error_message);
-                    }
-                };
-                request.send(null);
-                return null;
-            } else {
-                // sync
-                const request = new XMLHttpRequest();
-                request.open('GET', path, false);
-                request.send(null);
-                if (request.status === 200) {
-                    return self.parse(request.responseText, variables, options);
-                } else {
-                    throw new FileNotRetrievedError(error_message + "\n" + request.statusText);
-                }
-            }
-        }
-    }
+	/**
+	 * Parse given path content and replace the included variables by the given variables
+	 *
+	 * @param {string} path to file to parse
+	 * @param {Object<string, string>} variables <key <-> value>
+	 * @param {Object} options
+	 * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
+	 * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
+	 * @param {function} options.success only affects when running inside a browser. If given, the file of the given path will be requested asynchronous and the parsed string will be passed to this function.
+	 * @param {boolean} options.write write parsed content of the file directly into the file. Only available when running by node js.
+	 * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
+	 */
+	static parseFile(path, variables = {}, options = {
+		unresolved_vars: "throw",
+		replace_pattern: "##$1##",
+		success: null,
+		write: false
+	}) {
+		const self = CurlyBracketParser;
+		const default_options = {
+			unresolved_vars: "throw", replace_pattern: "##$1##", success: null, write: false
+		}
+		options = options ? options : {};
+		options = Object.assign(default_options, options);
+		variables = variables || {};
+		if (self._runByNode()) {
+			const fs = require("fs");
+			const file_content = fs.readFileSync(path, 'utf-8').toString();
+			const parsed_content = self.parse(file_content, variables, options);
+			if (options.write) {
+				fs.writeFileSync(path, parsed_content);
+			}
+			return parsed_content;
+		} else if (self._runByBrowser()) {
+			const error_message = `Could not retrieve file '${path}' by GET.`;
+			if (options.success && typeof options.success === 'function') {
+				// async
+				const request = new XMLHttpRequest();
+				request.open('GET', path, true);
+				request.onload = function (e) {
+					if (request.readyState === 4) {
+						if (request.status === 200) {
+							const parsed_content = self.parse(request.responseText, variables, options);
+							options.success(parsed_content);
+						} else {
+							throw new FileNotRetrievedError(error_message + "\n" + request.statusText);
+						}
+					} else {
+						throw new FileNotRetrievedError(error_message);
+					}
+				};
+				request.send(null);
+				return null;
+			} else {
+				// sync
+				const request = new XMLHttpRequest();
+				request.open('GET', path, false);
+				request.send(null);
+				if (request.status === 200) {
+					return self.parse(request.responseText, variables, options);
+				} else {
+					throw new FileNotRetrievedError(error_message + "\n" + request.statusText);
+				}
+			}
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Parse given path content and replace the included variables by the given variables
-     * Alias method of .parseFile with option write: true
-     *
-     * Only available when running on node js (not in browser)
-     *
-     * @param {string} path to file to parse
-     * @param {Object<string, string>} variables <key <-> value>
-     * @param {Object} options
-     * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
-     * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
-     * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
-     */
-    static parseFileWrite(path, variables = {}, options = {unresolved_vars: "throw", replace_pattern: "##$1##"}) {
-        const self = CurlyBracketParser;
-        options = options ? options : {};
-        options.write = true;
-        if (self._runByNode()) {
-            return self.parseFile(path, variables, options);
-        } else {
-            throw "This method can only be run on node js, not in browser.";
-        }
-    }
+	/**
+	 * Parse given path content and replace the included variables by the given variables
+	 * Alias method of .parseFile with option write: true
+	 *
+	 * Only available when running on node js (not in browser)
+	 *
+	 * @param {string} path to file to parse
+	 * @param {Object<string, string>} variables <key <-> value>
+	 * @param {Object} options
+	 * @param {('throw'|'keep'|'replace')} options.unresolved_vars 'throw', 'keep', 'replace' => define how to act when unresolved variables within the string are found.
+	 * @param {string} options.replace_pattern pattern used when param unresolved_vars is set to 'replace'. You can include the var name $1 and filter $2. Empty string to remove unresolved variables.
+	 * @returns {string|null} parsed string. In case of given 'success' parameter, the success() function will be called as callback and this function will return null instead.
+	 */
+	static parseFileWrite(path, variables = {}, options = { unresolved_vars: "throw", replace_pattern: "##$1##" }) {
+		const self = CurlyBracketParser;
+		options = options ? options : {};
+		options.write = true;
+		if (self._runByNode()) {
+			return self.parseFile(path, variables, options);
+		} else {
+			throw "This method can only be run on node js, not in browser.";
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Register your custom filter to the filter list
-     *
-     * @param {string} name
-     * @param {function} filter_function
-     * @param {Object} options
-     * @param {boolean} options.raise_on_exist raise exception if filter does already exist, default: true
-     * @throws {FilterAlreadyRegisteredError} if filter does already exist
-     */
-    static registerFilter(name, filter_function, options = {raise_on_exist: true}) {
-        const self = CurlyBracketParser;
-        if (self.isValidFilter(name)) {
-            throw new FilterAlreadyRegisteredError(`The given filter name '${name}' is already registered`);
-        } else {
-            if (typeof filter_function === 'function') {
-                self.registered_filters[name] = filter_function;
-            } else {
-                throw `Given parameter 'filter_function' must be of type 'function'. It is of type '${typeof filter_function}'.`;
-            }
-        }
-    }
+	/**
+	 * Register your custom filter to the filter list
+	 *
+	 * @param {string} name
+	 * @param {function} filter_function
+	 * @param {Object} options
+	 * @param {boolean} options.raise_on_exist raise exception if filter does already exist, default: true
+	 * @throws {FilterAlreadyRegisteredError} if filter does already exist
+	 */
+	static registerFilter(name, filter_function, options = { raise_on_exist: true }) {
+		const self = CurlyBracketParser;
+		if (self.isValidFilter(name)) {
+			throw new FilterAlreadyRegisteredError(`The given filter name '${name}' is already registered`);
+		} else {
+			if (typeof filter_function === 'function') {
+				self.registered_filters[name] = filter_function;
+			} else {
+				throw `Given parameter 'filter_function' must be of type 'function'. It is of type '${typeof filter_function}'.`;
+			}
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Process the given value with the given filter
-     *
-     * @param {string} name of the filter to apply on the value, e.g. {{var_name|my_filter_name}}
-     * @param {string} value string to apply the specified filter on
-     * @throws {InvalidFilterError} if the given filter name is invalid
-     * @returns {string} converted string with applied filter
-     */
-    static processFilter(name, value) {
-        const self = CurlyBracketParser;
-        if (self.registered_filters[name]) {
-            return self.registered_filters[name](value);
-        } else if (typeof LuckyCase !== 'undefined' && self.VALID_DEFAULT_FILTERS().includes(LuckyCase.toUpperCase(name)) && LuckyCase.isValidCaseType(LuckyCase.toUpperCase(name))) {
-            return LuckyCase.convertCase(value, LuckyCase.toUpperCase(name));
-        } else {
-            const error_message = `Invalid filter '${name}'. Valid filters are: ${self.validFilters().join(' ')}`;
-            throw new InvalidFilterError(error_message);
-        }
-    }
+	/**
+	 * Process the given value with the given filter
+	 *
+	 * @param {string} name of the filter to apply on the value, e.g. {{var_name|my_filter_name}}
+	 * @param {string} value string to apply the specified filter on
+	 * @throws {InvalidFilterError} if the given filter name is invalid
+	 * @returns {string} converted string with applied filter
+	 */
+	static processFilter(name, value) {
+		const self = CurlyBracketParser;
+		if (self.registered_filters[name]) {
+			return self.registered_filters[name](value);
+		} else if (typeof LuckyCase !== 'undefined' && self.VALID_DEFAULT_FILTERS().includes(LuckyCase.toUpperCase(name)) && LuckyCase.isValidCaseType(LuckyCase.toUpperCase(name))) {
+			return LuckyCase.convertCase(value, LuckyCase.toUpperCase(name));
+		} else {
+			const error_message = `Invalid filter '${name}'. Valid filters are: ${self.validFilters().join(' ')}`;
+			throw new InvalidFilterError(error_message);
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Retrieve array with valid filters
-     *
-     * @returns {Array<string>}
-     */
-    static validFilters() {
-        const self = CurlyBracketParser;
-        const default_filters = self.VALID_DEFAULT_FILTERS();
-        const registered_filters = Object.keys(self.registered_filters);
-        const default_filters_lower_case = self.VALID_DEFAULT_FILTERS().map((e) => {
-            return e.toLocaleLowerCase();
-        });
-        return default_filters.concat(registered_filters).concat(default_filters_lower_case);
-    }
+	/**
+	 * Retrieve array with valid filters
+	 *
+	 * @returns {Array<string>}
+	 */
+	static validFilters() {
+		const self = CurlyBracketParser;
+		const default_filters = self.VALID_DEFAULT_FILTERS();
+		const registered_filters = Object.keys(self.registered_filters);
+		const default_filters_lower_case = self.VALID_DEFAULT_FILTERS().map((e) => {
+			return e.toLocaleLowerCase();
+		});
+		return default_filters.concat(registered_filters).concat(default_filters_lower_case);
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if a given filter is valid
-     *
-     * @param {string} name
-     * @returns {boolean} true if filter exists, otherwise false
-     */
-    static isValidFilter(name) {
-        const self = CurlyBracketParser;
-        return self.validFilters().includes(name);
-    }
+	/**
+	 * Check if a given filter is valid
+	 *
+	 * @param {string} name
+	 * @returns {boolean} true if filter exists, otherwise false
+	 */
+	static isValidFilter(name) {
+		const self = CurlyBracketParser;
+		return self.validFilters().includes(name);
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Register a default variable to be replaced automatically by the given block value in future
-     * If the variable exists already, it will throw an VariableAlreadyRegisteredError
-     *
-     * @param {string} name of the default var
-     * @param {function} var_function function returning the variable value
-     * @param {Object} options
-     * @param {boolean} options.overwrite explicitly overwrite an existing default var without throwing an execption
-     * @returns {function} var_function
-     */
-    static registerDefaultVar(name, var_function, options = {overwrite: false}) {
-        const self = CurlyBracketParser;
-        options = options ? options : {};
-        const default_options = {
-            unresolved_vars: "throw", replace_pattern: "##$1##"
-        }
-        options = Object.assign(default_options, options);
-        if (self.isRegisteredDefaultVar(name) && options.overwrite === false) {
-            const error_message = `The given variable name '${name}' is already registered. If you want to override that variable explicitly, use option 'overwrite: true'!`;
-            throw new VariableAlreadyRegisteredError(error_message)
-        } else {
-            if (typeof var_function === 'function') {
-                return self.registered_default_vars[name] = var_function;
-            } else {
-                throw `Given parameter 'var_function' must be of type 'function'. It is of type '${typeof var_function}'.`;
-            }
-        }
-    }
+	/**
+	 * Register a default variable to be replaced automatically by the given block value in future
+	 * If the variable exists already, it will throw an VariableAlreadyRegisteredError
+	 *
+	 * @param {string} name of the default var
+	 * @param {function} var_function function returning the variable value
+	 * @param {Object} options
+	 * @param {boolean} options.overwrite explicitly overwrite an existing default var without throwing an execption
+	 * @returns {function} var_function
+	 */
+	static registerDefaultVar(name, var_function, options = { overwrite: false }) {
+		const self = CurlyBracketParser;
+		options = options ? options : {};
+		const default_options = {
+			unresolved_vars: "throw", replace_pattern: "##$1##"
+		}
+		options = Object.assign(default_options, options);
+		if (self.isRegisteredDefaultVar(name) && options.overwrite === false) {
+			const error_message = `The given variable name '${name}' is already registered. If you want to override that variable explicitly, use option 'overwrite: true'!`;
+			throw new VariableAlreadyRegisteredError(error_message)
+		} else {
+			if (typeof var_function === 'function') {
+				return self.registered_default_vars[name] = var_function;
+			} else {
+				throw `Given parameter 'var_function' must be of type 'function'. It is of type '${typeof var_function}'.`;
+			}
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Return the given default variable by returning the result of its function
-     *
-     * @param {string} name
-     * @returns {string} the result of the given default variable function
-     */
-    static processDefaultVar(name) {
-        const self = CurlyBracketParser;
-        if (self.registered_default_vars[name]) {
-            return self.registered_default_vars[name]();
-        } else {
-            const error_message = `Invalid default variable '${name}'. Valid registered default variables are: ${Object.keys(self.registered_default_vars).join(' ')}`;
-            throw new InvalidVariableError(error_message);
-        }
-    }
+	/**
+	 * Return the given default variable by returning the result of its function
+	 *
+	 * @param {string} name
+	 * @returns {string} the result of the given default variable function
+	 */
+	static processDefaultVar(name) {
+		const self = CurlyBracketParser;
+		if (self.registered_default_vars[name]) {
+			return self.registered_default_vars[name]();
+		} else {
+			const error_message = `Invalid default variable '${name}'. Valid registered default variables are: ${Object.keys(self.registered_default_vars).join(' ')}`;
+			throw new InvalidVariableError(error_message);
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Unregister / remove an existing default variable
-     *
-     * @param {string} name of the variable
-     * @returns {boolean} true if variable existed and was unregistered, false if it didn't exist
-     */
-    static unregisterDefaultVar(name) {
-        const self = CurlyBracketParser;
-        if (self.registered_default_vars[name]) {
-            delete self.registered_default_vars[name];
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * Unregister / remove an existing default variable
+	 *
+	 * @param {string} name of the variable
+	 * @returns {boolean} true if variable existed and was unregistered, false if it didn't exist
+	 */
+	static unregisterDefaultVar(name) {
+		const self = CurlyBracketParser;
+		if (self.registered_default_vars[name]) {
+			delete self.registered_default_vars[name];
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Return an array of registered default variables
-     *
-     * @returns {Array<string>}
-     */
-    static registeredDefaultVars() {
-        const self = CurlyBracketParser;
-        return Object.keys(self.registered_default_vars);
-    }
+	/**
+	 * Return an array of registered default variables
+	 *
+	 * @returns {Array<string>}
+	 */
+	static registeredDefaultVars() {
+		const self = CurlyBracketParser;
+		return Object.keys(self.registered_default_vars);
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if the given variable is a registered default variable
-     *
-     * @param {string} name of the variable
-     * @returns {boolean} true if variable is registered, otherwise false
-     */
-    static isRegisteredDefaultVar(name) {
-        const self = CurlyBracketParser;
-        return self.registeredDefaultVars().includes(name);
-    }
+	/**
+	 * Check if the given variable is a registered default variable
+	 *
+	 * @param {string} name of the variable
+	 * @returns {boolean} true if variable is registered, otherwise false
+	 */
+	static isRegisteredDefaultVar(name) {
+		const self = CurlyBracketParser;
+		return self.registeredDefaultVars().includes(name);
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Return a object containing separated name and filter of a variable
-     *
-     * @example
-     #   '{{var_name|filter_name}}' => { name: 'var_name', filter: 'filter_name' }
-     *
-     * @param {string} variable string to scan
-     * @returns {Object} name, filter
-     */
-    static decodeVariable(variable) {
-        const self = CurlyBracketParser;
-        return self.decodedVariables(variable)[0];
-    }
+	/**
+	 * Return a object containing separated name and filter of a variable
+	 *
+	 * @example
+	 #   '{{var_name|filter_name}}' => { name: 'var_name', filter: 'filter_name' }
+	 *
+	 * @param {string} variable string to scan
+	 * @returns {Object} name, filter
+	 */
+	static decodeVariable(variable) {
+		const self = CurlyBracketParser;
+		return self.decodedVariables(variable)[0];
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Scans the given url for variables with pattern '{{var|optional_filter}}'
-     *
-     * @example
-     #   'The variable {{my_var|my_filter}} is inside this string' => [{ name: "my_var", filter: "my_filter"}]
-     *
-     * @param {string} string to scan
-     * @returns {Array<Object>} array of variable names and its filters
-     */
-    static decodedVariables(string) {
-        const self = CurlyBracketParser;
-        let variables = [];
-        self.VARIABLE_DECODER_REGEX.lastIndex = 0;
-        while (true) {
-            const res = self.VARIABLE_DECODER_REGEX.exec(string);
-            if (res) {
-                let val = {name: res[1].trim(), filter: res[2].trim() !== '' ? res[2].trim() : null};
-                variables.push(val);
-            } else {
-                self.VARIABLE_DECODER_REGEX.lastIndex = 0;
-                break;
-            }
-        }
-        return variables;
-    }
+	/**
+	 * Scans the given url for variables with pattern '{{var|optional_filter}}'
+	 *
+	 * @example
+	 #   'The variable {{my_var|my_filter}} is inside this string' => [{ name: "my_var", filter: "my_filter"}]
+	 *
+	 * @param {string} string to scan
+	 * @returns {Array<Object>} array of variable names and its filters
+	 */
+	static decodedVariables(string) {
+		const self = CurlyBracketParser;
+		let variables = [];
+		self.VARIABLE_DECODER_REGEX.lastIndex = 0;
+		while (true) {
+			const res = self.VARIABLE_DECODER_REGEX.exec(string);
+			if (res) {
+				let val = { name: res[1].trim(), filter: res[2].trim() !== '' ? res[2].trim() : null };
+				variables.push(val);
+			} else {
+				self.VARIABLE_DECODER_REGEX.lastIndex = 0;
+				break;
+			}
+		}
+		return variables;
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Scans the given url for variables with pattern '{{var|optional_filter}}'
-     *
-     * @param {string} string to scan
-     * @returns {Array<string>} array of variable names and its filters
-     */
-    static variables(string) {
-        const self = CurlyBracketParser;
-        return string.match(self.VARIABLE_REGEX).flat();
-    }
+	/**
+	 * Scans the given url for variables with pattern '{{var|optional_filter}}'
+	 *
+	 * @param {string} string to scan
+	 * @returns {Array<string>} array of variable names and its filters
+	 */
+	static variables(string) {
+		const self = CurlyBracketParser;
+		return string.match(self.VARIABLE_REGEX).flat();
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if any variable is included in the given string
-     *
-     * @param {string} string name of variable to check for
-     * @returns {boolean} true if any variable is included in the given string, otherwise false
-     */
-    static isAnyVariableIncluded(string) {
-        const self = CurlyBracketParser;
-        return string.match(self.VARIABLE_REGEX) !== null
-    }
+	/**
+	 * Check if any variable is included in the given string
+	 *
+	 * @param {string} string name of variable to check for
+	 * @returns {boolean} true if any variable is included in the given string, otherwise false
+	 */
+	static isAnyVariableIncluded(string) {
+		const self = CurlyBracketParser;
+		return string.match(self.VARIABLE_REGEX) !== null
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if one of the given variable names is included in the given string
-     *
-     * @param variable_names
-     * @param {string} string name of variable to check for
-     * @returns {boolean} true if one given variable name is included in given the string, otherwise false
-     */
-    static includesOneVariableOf(variable_names, string) {
-        const self = CurlyBracketParser;
-        for (let val of self.decodedVariables(string)) {
-            if (variable_names.includes(val.name)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	/**
+	 * Check if one of the given variable names is included in the given string
+	 *
+	 * @param variable_names
+	 * @param {string} string name of variable to check for
+	 * @returns {boolean} true if one given variable name is included in given the string, otherwise false
+	 */
+	static includesOneVariableOf(variable_names, string) {
+		const self = CurlyBracketParser;
+		for (let val of self.decodedVariables(string)) {
+			if (variable_names.includes(val.name)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Replace all search matches with replace variable
-     *
-     * @param {string} string
-     * @param {string} search
-     * @param {string} replace
-     * @returns {string} resulting string
-     * @private
-     */
-    static _replaceAll(string, search, replace) {
-        return string.split(search).join(replace);
-    }
+	/**
+	 * Replace all search matches with replace variable
+	 *
+	 * @param {string} string
+	 * @param {string} search
+	 * @param {string} replace
+	 * @returns {string} resulting string
+	 * @private
+	 */
+	static _replaceAll(string, search, replace) {
+		return string.split(search).join(replace);
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if this javascript is running in node js
-     *
-     * @returns {boolean} true if running with node js (not browser)
-     * @private
-     */
-    static _runByNode() {
-        return (typeof module !== 'undefined' && module.exports);
-    }
+	/**
+	 * Check if this javascript is running in node js
+	 *
+	 * @returns {boolean} true if running with node js (not browser)
+	 * @private
+	 */
+	static _runByNode() {
+		return (typeof module !== 'undefined' && module.exports);
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if this javascript is running in a browser
-     *
-     * @returns {boolean} true if running with browser
-     * @private
-     */
-    static _runByBrowser() {
-        const self = CurlyBracketParser;
-        return !self._runByNode();
-    }
+	/**
+	 * Check if this javascript is running in a browser
+	 *
+	 * @returns {boolean} true if running with browser
+	 * @private
+	 */
+	static _runByBrowser() {
+		const self = CurlyBracketParser;
+		return !self._runByNode();
+	}
 
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Check if the given string is a valid tree variable string.
-     * That means it must include at least one dot, that must be prepended and appended by a character.
-     *
-     * @example
-     *  "person.data.first_name"
-     *  => true
-     *
-     * @param {string} name
-     * @param {{ throw_error_on_false: boolean }} options
-     * @returns {boolean}
-     * @private
-     */
-    static _isTreeVariableString(name, options = { throw_error_on_false: false }) {
-        const tree_variable_string_regex = /^[^\.]([^\.]*\.[^\.]+)+$/i;
-        const is_valid = !!name.trim().match(tree_variable_string_regex);
-        if(!is_valid && options && options.throw_error_on_false) {
-            throw new InvalidTreeVariableStringError(name);
-        }
-        return is_valid;
-    }
+	/**
+	 * Check if the given string is a valid tree variable string.
+	 * That means it must include at least one dot, that must be prepended and appended by a character.
+	 *
+	 * @example
+	 *  "person.data.first_name"
+	 *  => true
+	 *
+	 * @param {string} name
+	 * @param {{ throw_error_on_false: boolean }} options
+	 * @returns {boolean}
+	 * @private
+	 */
+	static _isTreeVariableString(name, options = { throw_error_on_false: false }) {
+		const tree_variable_string_regex = /^[^\.]([^\.]*\.[^\.]+)+$/i;
+		const is_valid = !!name.trim().match(tree_variable_string_regex);
+		if (!is_valid && options && options.throw_error_on_false) {
+			throw new InvalidTreeVariableStringError(name);
+		}
+		return is_valid;
+	}
 
-    /**
-     * Extract variable value by tree variable string
-     *
-     * @example
-     * function ({person: { data: { first_name: 'John'}}}, 'person.data.first_name')
-     *  => 'John'
-     *
-     * @param {Object} variables
-     * @param {string} name
-     * @returns {any}
-     * @private
-     */
-    static _extractTreeVariable(variables, name) {
-        const self = CurlyBracketParser;
-        self._isTreeVariableString(name, { throw_error_on_false: true });
-        const levels = name.split('.');
-        let dig_value = variables;
-        for(let i = 0; i < levels.length; ++i) {
-            if(dig_value.hasOwnProperty(levels[i])) {
-                dig_value = dig_value[levels[i]];
-            } else {
-                throw new TreeVariableNotFoundError(`Tree variable not found: '${name}'`);
-            }
-        }
-        return dig_value;
-    }
+	/**
+	 * Extract variable value by tree variable string
+	 *
+	 * @example
+	 * function ({person: { data: { first_name: 'John'}}}, 'person.data.first_name')
+	 *  => 'John'
+	 *
+	 * @param {Object} variables
+	 * @param {string} name
+	 * @returns {any}
+	 * @private
+	 */
+	static _extractTreeVariable(variables, name) {
+		const self = CurlyBracketParser;
+		self._isTreeVariableString(name, { throw_error_on_false: true });
+		const levels = name.split('.');
+		let dig_value = variables;
+		for (let i = 0; i < levels.length; ++i) {
+			if (dig_value.hasOwnProperty(levels[i])) {
+				dig_value = dig_value[levels[i]];
+			} else {
+				throw new TreeVariableNotFoundError(`Tree variable not found: '${name}'`);
+			}
+		}
+		return dig_value;
+	}
 
-    /**
-     * Check if the given tree property is defined
-     *
-     * @example
-     *   ({ first: { second: 123 } }, 'first.second')
-     *   => true
-     *
-     * @example
-     *  ({ first: { second: 123 } }, 'first.does.not.exist')
-     *   => false
-     *
-     * @param {Object} variables
-     * @param {string} name
-     * @returns {boolean}
-     * @private
-     */
-    static _hasTreeProperty(variables, name) {
-        const self = CurlyBracketParser;
-        self._isTreeVariableString(name, { throw_error_on_false: true });
-        try {
-            self._extractTreeVariable(variables, name);
-            return true;
-        } catch(e) {
-            if(e instanceof TreeVariableNotFoundError) {
-                return false;
-            } else {
-                throw e;
-            }
-        }
-    }
+	/**
+	 * Check if the given tree property is defined
+	 *
+	 * @example
+	 *   ({ first: { second: 123 } }, 'first.second')
+	 *   => true
+	 *
+	 * @example
+	 *  ({ first: { second: 123 } }, 'first.does.not.exist')
+	 *   => false
+	 *
+	 * @param {Object} variables
+	 * @param {string} name
+	 * @returns {boolean}
+	 * @private
+	 */
+	static _hasTreeProperty(variables, name) {
+		const self = CurlyBracketParser;
+		self._isTreeVariableString(name, { throw_error_on_false: true });
+		try {
+			self._extractTreeVariable(variables, name);
+			return true;
+		} catch (e) {
+			if (e instanceof TreeVariableNotFoundError) {
+				return false;
+			} else {
+				throw e;
+			}
+		}
+	}
 }
 
 /**
@@ -593,61 +593,68 @@ CurlyBracketParser.registered_default_vars = {};
 CurlyBracketParser.VARIABLE_DECODER_REGEX = /{{([^{}\|]*)\|?([^{}\|]*)}}/gsm;
 CurlyBracketParser.VARIABLE_REGEX = /{{[^{}]*}}/gsm;
 CurlyBracketParser.VALID_DEFAULT_FILTERS = () => {
-    if (typeof LuckyCase !== 'undefined') {
-        return Object.keys(LuckyCase.CASES);
-    } else {
-        return [];
-    }
+	if (typeof LuckyCase !== 'undefined') {
+		return Object.keys(LuckyCase.CASES);
+	} else {
+		return [];
+	}
 }
 
 
 
 
 class FileNotRetrievedError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "FileNotRetrievedError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "FileNotRetrievedError";
+	}
 }
 
 
 class FilterAlreadyRegisteredError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "FilterAlreadyRegisteredError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "FilterAlreadyRegisteredError";
+	}
 }
 
 
 class InvalidFilterError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "InvalidFilterError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "InvalidFilterError";
+	}
 }
 
 
 class InvalidVariableError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "InvalidVariableError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "InvalidVariableError";
+	}
 }
 
 
 class UnresolvedVariablesError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "UnresolvedVariablesError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "UnresolvedVariablesError";
+	}
+}
+
+class TreeVariableNotFoundError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "TreeVariableNotFoundError";
+	}
 }
 
 
 class VariableAlreadyRegisteredError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "VariableAlreadyRegisteredError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "VariableAlreadyRegisteredError";
+	}
 }
 
 /**
@@ -669,1020 +676,1020 @@ class VariableAlreadyRegisteredError extends Error {
  *
  */
 class LuckyCase {
-    /**
-     * Get the version of the used library
-     * @returns {string}
-     */
-    static getVersion() {
-        const self = LuckyCase;
-        return self._version;
-    }
+	/**
+	 * Get the version of the used library
+	 * @returns {string}
+	 */
+	static getVersion() {
+		const self = LuckyCase;
+		return self._version;
+	}
 
-    /**
-     * Get type of case of string (one key of LuckyCase.CASES)
-     *
-     * If more than one case matches, the first match wins.
-     * Match prio is the order of the regex in LuckyCase.CASES
-     *
-     * If you want or need to know all cases, use plural version of this method
-     *
-     * If you want to check explicitly for one case, use its check method,
-     * e.g. isSnakeCase() for SNAKE_CASE, etc...
-     *
-     * @param {string} string
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {string|null} symbol of type, null if no match
-     */
-    static case(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if (allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        let resulting_case = null;
-        for (let case_type of Object.keys(self.CASES)) {
-            // due js bug we need explicitly check twice, because the regex sometimes does only match each second time
-            const regex = self.CASES[case_type.toString()];
-            regex.lastIndex = 0; // In JavaScript, global regexen have state: you call them the first time, you get the first match in a given string. Call them again and you get the next match, and so on until you get no match and it resets to the start of the next string. You can also write regex.lastIndex= 0 to reset this state.
-            if (self.CASES[case_type].test(s)) {
-                resulting_case = case_type;
-                break;
-            }
-        }
-        return resulting_case;
-    }
+	/**
+	 * Get type of case of string (one key of LuckyCase.CASES)
+	 *
+	 * If more than one case matches, the first match wins.
+	 * Match prio is the order of the regex in LuckyCase.CASES
+	 *
+	 * If you want or need to know all cases, use plural version of this method
+	 *
+	 * If you want to check explicitly for one case, use its check method,
+	 * e.g. isSnakeCase() for SNAKE_CASE, etc...
+	 *
+	 * @param {string} string
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {string|null} symbol of type, null if no match
+	 */
+	static case(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		let resulting_case = null;
+		for (let case_type of Object.keys(self.CASES)) {
+			// due js bug we need explicitly check twice, because the regex sometimes does only match each second time
+			const regex = self.CASES[case_type.toString()];
+			regex.lastIndex = 0; // In JavaScript, global regexen have state: you call them the first time, you get the first match in a given string. Call them again and you get the next match, and so on until you get no match and it resets to the start of the next string. You can also write regex.lastIndex= 0 to reset this state.
+			if (self.CASES[case_type].test(s)) {
+				resulting_case = case_type;
+				break;
+			}
+		}
+		return resulting_case;
+	}
 
-    /**
-     * Get types of cases of string (keys of LuckyCase.CASES)
-     *
-     * @param {string} string
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {string[]|null} symbols of types, null if no one matches
-     */
-    static cases(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if (allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        let matched_cases = [];
-        for (let case_type of Object.keys(self.CASES)) {
-            const regex = self.CASES[case_type];
-            regex.lastIndex = 0; // reset state
-            if (regex.test(s)) {
-                matched_cases.push(case_type);
-            }
-        }
-        if (matched_cases.length === 0) {
-            return null;
-        } else if (matched_cases.length > 1) {
-            // reject MIXED_CASE if there are other matches
-            // because it would always be included if one other case matches
-            return matched_cases.filter((el) => {
-                return el !== self.MIXED_CASE;
-            });
-        } else {
-            return matched_cases;
-        }
-    }
+	/**
+	 * Get types of cases of string (keys of LuckyCase.CASES)
+	 *
+	 * @param {string} string
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {string[]|null} symbols of types, null if no one matches
+	 */
+	static cases(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		let matched_cases = [];
+		for (let case_type of Object.keys(self.CASES)) {
+			const regex = self.CASES[case_type];
+			regex.lastIndex = 0; // reset state
+			if (regex.test(s)) {
+				matched_cases.push(case_type);
+			}
+		}
+		if (matched_cases.length === 0) {
+			return null;
+		} else if (matched_cases.length > 1) {
+			// reject MIXED_CASE if there are other matches
+			// because it would always be included if one other case matches
+			return matched_cases.filter((el) => {
+				return el !== self.MIXED_CASE;
+			});
+		} else {
+			return matched_cases;
+		}
+	}
 
-    /**
-     * Convert a string into the given case type
-     *
-     * @param {string} string to convert
-     * @param {string} case_type can be UPPER_CASE or lower_case, e.g. 'SNAKE_CASE' or 'snake_case'
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static convertCase(string, case_type, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        case_type = self.toUpperCase(case_type);
-        if (Object.keys(self.CASES).includes(case_type)) {
-            return self['to' + self.toPascalCase(case_type)](string, preserve_prefixed_underscores);
-        }
-        const error_message = `Invalid case type '${case_type}'. Valid types are: ${Object.keys(self.CASES).join(', ')}`;
-        throw new InvalidCaseError(error_message);
-    }
+	/**
+	 * Convert a string into the given case type
+	 *
+	 * @param {string} string to convert
+	 * @param {string} case_type can be UPPER_CASE or lower_case, e.g. 'SNAKE_CASE' or 'snake_case'
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static convertCase(string, case_type, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		case_type = self.toUpperCase(case_type);
+		if (Object.keys(self.CASES).includes(case_type)) {
+			return self['to' + self.toPascalCase(case_type)](string, preserve_prefixed_underscores);
+		}
+		const error_message = `Invalid case type '${case_type}'. Valid types are: ${Object.keys(self.CASES).join(', ')}`;
+		throw new InvalidCaseError(error_message);
+	}
 
-    /**
-     * Check if given case type is a valid case type
-     *
-     * @param {string} case_type to check
-     * @returns {boolean}
-     */
-    static isValidCaseType(case_type) {
-        const self = LuckyCase;
-        if (Object.keys(self.CASES).includes(case_type)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * Check if given case type is a valid case type
+	 *
+	 * @param {string} case_type to check
+	 * @returns {boolean}
+	 */
+	static isValidCaseType(case_type) {
+		const self = LuckyCase;
+		if (Object.keys(self.CASES).includes(case_type)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    /**
-     * Check if the string matches any of the available cases
-     *
-     * @param {string} string to check
-     * @returns {boolean}
-     */
-    static isValidCaseString(string) {
-        const self = LuckyCase;
-        return self.case(string) !== null;
-    }
+	/**
+	 * Check if the string matches any of the available cases
+	 *
+	 * @param {string} string to check
+	 * @returns {boolean}
+	 */
+	static isValidCaseString(string) {
+		const self = LuckyCase;
+		return self.case(string) !== null;
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // UPPER CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// UPPER CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert all characters inside the string
-     * into upper case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'THIS-ISANEXAMPLE_STRING'
-     *
-     * @param {string} string to convert
-     * @returns {string}
-     */
-    static toUpperCase(string) {
-        return string.toLocaleUpperCase();
-    }
+	/**
+	 * Convert all characters inside the string
+	 * into upper case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'THIS-ISANEXAMPLE_STRING'
+	 *
+	 * @param {string} string to convert
+	 * @returns {string}
+	 */
+	static toUpperCase(string) {
+		return string.toLocaleUpperCase();
+	}
 
-    /**
-     * Check if all characters inside the string are upper case
-     *
-     * @param {string} string to check
-     * @returns {boolean}
-     */
-    static isUpperCase(string) {
-        const self = LuckyCase;
-        return string === self.toUpperCase(string);
-    }
+	/**
+	 * Check if all characters inside the string are upper case
+	 *
+	 * @param {string} string to check
+	 * @returns {boolean}
+	 */
+	static isUpperCase(string) {
+		const self = LuckyCase;
+		return string === self.toUpperCase(string);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // LOWER CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// LOWER CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert all characters inside the string
-     * into lower case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'this-isanexample_string'
-     *
-     * @param {string} string to convert
-     * @returns {string}
-     */
-    static toLowerCase(string) {
-        return string.toLocaleLowerCase();
-    }
+	/**
+	 * Convert all characters inside the string
+	 * into lower case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'this-isanexample_string'
+	 *
+	 * @param {string} string to convert
+	 * @returns {string}
+	 */
+	static toLowerCase(string) {
+		return string.toLocaleLowerCase();
+	}
 
-    /**
-     * Check if all characters inside the string are lower case
-     *
-     * @param {string} string to check
-     * @returns {boolean}
-     */
-    static isLowerCase(string) {
-        const self = LuckyCase;
-        return string === self.toLowerCase(string);
-    }
+	/**
+	 * Check if all characters inside the string are lower case
+	 *
+	 * @param {string} string to check
+	 * @returns {boolean}
+	 */
+	static isLowerCase(string) {
+		const self = LuckyCase;
+		return string === self.toLowerCase(string);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // SNAKE CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// SNAKE CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into snake case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'this_is_an_example_string'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toSnakeCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.join('_');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into snake case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'this_is_an_example_string'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toSnakeCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.join('_');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is snake case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isSnakeCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.SNAKE_CASE);
-    }
+	/**
+	 * Check if the string is snake case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isSnakeCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.SNAKE_CASE);
+	}
 
-    /**
-     * Convert the given string from any case
-     * into upper snake case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'THIS_IS_AN_EXAMPLE_STRING'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toUpperSnakeCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.map((e) => { return self.toUpperCase(e) }).join('_');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into upper snake case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'THIS_IS_AN_EXAMPLE_STRING'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toUpperSnakeCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.map((e) => { return self.toUpperCase(e) }).join('_');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is upper snake case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isUpperSnakeCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.UPPER_SNAKE_CASE);
-    }
+	/**
+	 * Check if the string is upper snake case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isUpperSnakeCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.UPPER_SNAKE_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // PASCAL CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// PASCAL CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into pascal case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'ThisIsAnExampleString'
-     *
-     * @param string to convert
-     * @param preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toPascalCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.map((e) => { return self.toCapital(e); }).join('');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into pascal case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'ThisIsAnExampleString'
+	 *
+	 * @param string to convert
+	 * @param preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toPascalCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.map((e) => { return self.toCapital(e); }).join('');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is upper pascal case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isPascalCase(string, allow_prefixed_underscores = true)  {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.PASCAL_CASE);
-    }
+	/**
+	 * Check if the string is upper pascal case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isPascalCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.PASCAL_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // CAMEL CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// CAMEL CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into camel case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'thisIsAnExampleString'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toCamelCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a[0] + (a.slice(1).map((e) => { return self.toCapital(e); })).join('');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into camel case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'thisIsAnExampleString'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toCamelCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a[0] + (a.slice(1).map((e) => { return self.toCapital(e); })).join('');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is camel case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isCamelCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.CAMEL_CASE);
-    }
+	/**
+	 * Check if the string is camel case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isCamelCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.CAMEL_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // DASH CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// DASH CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into dash case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'this-is-an-example-string'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toDashCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.join('-');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into dash case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'this-is-an-example-string'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toDashCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.join('-');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is dash case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isDashCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.DASH_CASE);
-    }
+	/**
+	 * Check if the string is dash case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isDashCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.DASH_CASE);
+	}
 
-    /**
-     * Convert the given string from any case
-     * into upper dash case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'THIS-IS-AN-EXAMPLE-STRING'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toUpperDashCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const s = self.toDashCase(string, preserve_prefixed_underscores);
-        return self.toUpperCase(s);
-    }
+	/**
+	 * Convert the given string from any case
+	 * into upper dash case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'THIS-IS-AN-EXAMPLE-STRING'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toUpperDashCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const s = self.toDashCase(string, preserve_prefixed_underscores);
+		return self.toUpperCase(s);
+	}
 
-    /**
-     * Check if the string is upper dash case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isUpperDashCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.UPPER_DASH_CASE);
-    }
+	/**
+	 * Check if the string is upper dash case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isUpperDashCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.UPPER_DASH_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // TRAIN CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// TRAIN CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into train case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'This-Is-An-Example-String'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toTrainCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.map((e) => { return self.toCapital(e); }).join('-');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into train case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'This-Is-An-Example-String'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toTrainCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.map((e) => { return self.toCapital(e); }).join('-');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is train case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isTrainCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.TRAIN_CASE);
-    }
+	/**
+	 * Check if the string is train case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isTrainCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.TRAIN_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // WORD CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// WORD CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into word case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'this is an example string'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toWordCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.join(' ');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into word case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'this is an example string'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toWordCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.join(' ');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is word case
-     *
-     * @param {string} string to check
-     * @param allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isWordCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.WORD_CASE);
-    }
+	/**
+	 * Check if the string is word case
+	 *
+	 * @param {string} string to check
+	 * @param allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isWordCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.WORD_CASE);
+	}
 
-    /**
-     * Convert the given string from any case
-     * into upper word case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'THIS IS AN EXAMPLE STRING'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toUpperWordCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.map((e) => { return self.toUpperCase(e); }).join(' ');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into upper word case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'THIS IS AN EXAMPLE STRING'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toUpperWordCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.map((e) => { return self.toUpperCase(e); }).join(' ');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is upper word case
-     *
-     * @param string to check
-     * @param allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isUpperWordCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.UPPER_WORD_CASE);
-    }
+	/**
+	 * Check if the string is upper word case
+	 *
+	 * @param string to check
+	 * @param allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isUpperWordCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.UPPER_WORD_CASE);
+	}
 
-    /**
-     * Convert the given string from any case
-     * into capital word case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'This Is An Example String'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toCapitalWordCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = a.map((e) => { return self.toCapital(e); }).join(' ');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into capital word case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'This Is An Example String'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toCapitalWordCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = a.map((e) => { return self.toCapital(e); }).join(' ');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is capital word case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isCapitalWordCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.CAPITAL_WORD_CASE);
-    }
+	/**
+	 * Check if the string is capital word case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isCapitalWordCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.CAPITAL_WORD_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // SENTENCE CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// SENTENCE CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into sentence case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'This is an example string'
-     *
-     * @param {string} string to convert
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toSentenceCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        const converted = self.toCapital(a.join(' '));
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into sentence case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'This is an example string'
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toSentenceCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		const converted = self.toCapital(a.join(' '));
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is sentence case
-     *
-     * @param {string} string to check
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isSentenceCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.SENTENCE_CASE);
-    }
+	/**
+	 * Check if the string is sentence case
+	 *
+	 * @param {string} string to check
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isSentenceCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.SENTENCE_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // CAPITALIZE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// CAPITALIZE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the first character to capital
-     *
-     * @param {string} string to convert
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {string}
-     */
-    static toCapital(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        if(!string || string === '') {
-            return string;
-        }
-        let s;
-        if(skip_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        s = self.toUpperCase(s[0]) + s.substr(1);
-        if(skip_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + s;
-        } else {
-            return s;
-        }
-    }
+	/**
+	 * Convert the first character to capital
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toCapital(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		if (!string || string === '') {
+			return string;
+		}
+		let s;
+		if (skip_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		s = self.toUpperCase(s[0]) + s.substr(1);
+		if (skip_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + s;
+		} else {
+			return s;
+		}
+	}
 
-    /**
-     * Convert the first character to capital
-     *
-     * @param {string} string to convert
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {string}
-     */
-    static capitalize(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        return self.toCapital(string, skip_prefixed_underscores);
-    }
+	/**
+	 * Convert the first character to capital
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {string}
+	 */
+	static capitalize(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		return self.toCapital(string, skip_prefixed_underscores);
+	}
 
-    /**
-     * Check if the strings first character is a capital letter
-     *
-     * @param {string} string
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isCapital(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        let s;
-        if(skip_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self.isUpperCase(s[0]);
-    }
+	/**
+	 * Check if the strings first character is a capital letter
+	 *
+	 * @param {string} string
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isCapital(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		let s;
+		if (skip_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self.isUpperCase(s[0]);
+	}
 
-    /**
-     * Check if the strings first character is a capital letter
-     *
-     * @param {string} string
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isCapitalized(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        return self.isCapital(string, skip_prefixed_underscores);
-    }
+	/**
+	 * Check if the strings first character is a capital letter
+	 *
+	 * @param {string} string
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isCapitalized(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		return self.isCapital(string, skip_prefixed_underscores);
+	}
 
-    /**
-     * Convert the first character to lower case
-     *
-     * @param {string} string to convert
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {string}
-     */
-    static decapitalize(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        if(!string || string === '') {
-            return string;
-        }
-        let s;
-        if(skip_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        s = self.toLowerCase(s[0]) + s.substr(1);
-        if(skip_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + s;
-        } else {
-            return s;
-        }
-    }
+	/**
+	 * Convert the first character to lower case
+	 *
+	 * @param {string} string to convert
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {string}
+	 */
+	static decapitalize(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		if (!string || string === '') {
+			return string;
+		}
+		let s;
+		if (skip_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		s = self.toLowerCase(s[0]) + s.substr(1);
+		if (skip_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + s;
+		} else {
+			return s;
+		}
+	}
 
-    /**
-     * Check if the strings first character is a lower case letter
-     *
-     * @param {string} string
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isNotCapital(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        return !self.isCapital(string, skip_prefixed_underscores);
-    }
+	/**
+	 * Check if the strings first character is a lower case letter
+	 *
+	 * @param {string} string
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isNotCapital(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		return !self.isCapital(string, skip_prefixed_underscores);
+	}
 
-    /**
-     * Check if the strings first character is a lower case letter
-     *
-     * @param {string} string
-     * @param {boolean} skip_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isDecapitalized(string, skip_prefixed_underscores = false) {
-        const self = LuckyCase;
-        return self.isNotCapital(string, skip_prefixed_underscores);
-    }
+	/**
+	 * Check if the strings first character is a lower case letter
+	 *
+	 * @param {string} string
+	 * @param {boolean} skip_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isDecapitalized(string, skip_prefixed_underscores = false) {
+		const self = LuckyCase;
+		return self.isNotCapital(string, skip_prefixed_underscores);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // MIXED CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// MIXED CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the given string from any case
-     * into mixed case.
-     *
-     * The new string is ensured to be different from the input.
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'This-Is_anExample-string'
-     *
-     * @param {string} string
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static toMixedCase(string, preserve_prefixed_underscores = true) {
-        const self = LuckyCase;
-        const a = self.splitCaseString(string);
-        let converted = null;
-        do {
-            converted = '';
-            for(let part of a) {
-                converted += self.convertCase(part, self._sampleFromArray(Object.keys(self.CASES)), preserve_prefixed_underscores)
-            }
-            converted = self.convertCase(converted, self._sampleFromArray(Object.keys(self.CASES)), preserve_prefixed_underscores)
-        } while (!(converted !== string && self.getUnderscoresAtStart(string) + converted !== string));
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + converted;
-        } else {
-            return converted;
-        }
-    }
+	/**
+	 * Convert the given string from any case
+	 * into mixed case.
+	 *
+	 * The new string is ensured to be different from the input.
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'This-Is_anExample-string'
+	 *
+	 * @param {string} string
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static toMixedCase(string, preserve_prefixed_underscores = true) {
+		const self = LuckyCase;
+		const a = self.splitCaseString(string);
+		let converted = null;
+		do {
+			converted = '';
+			for (let part of a) {
+				converted += self.convertCase(part, self._sampleFromArray(Object.keys(self.CASES)), preserve_prefixed_underscores)
+			}
+			converted = self.convertCase(converted, self._sampleFromArray(Object.keys(self.CASES)), preserve_prefixed_underscores)
+		} while (!(converted !== string && self.getUnderscoresAtStart(string) + converted !== string));
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + converted;
+		} else {
+			return converted;
+		}
+	}
 
-    /**
-     * Check if the string is a valid mixed case (without special characters!)
-     *
-     * @param {string} string
-     * @param {boolean} allow_prefixed_underscores
-     * @returns {boolean}
-     */
-    static isMixedCase(string, allow_prefixed_underscores = true) {
-        const self = LuckyCase;
-        let s;
-        if(allow_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        return self._isCaseMatch(s, self.MIXED_CASE);
-    }
+	/**
+	 * Check if the string is a valid mixed case (without special characters!)
+	 *
+	 * @param {string} string
+	 * @param {boolean} allow_prefixed_underscores
+	 * @returns {boolean}
+	 */
+	static isMixedCase(string, allow_prefixed_underscores = true) {
+		const self = LuckyCase;
+		let s;
+		if (allow_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		return self._isCaseMatch(s, self.MIXED_CASE);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // SWAP CASE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// SWAP CASE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Swaps character cases in string
-     *
-     * lower case to upper case
-     * upper case to lower case
-     * dash to underscore
-     * underscore to dash
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'THIS_ISaNeXAMPLE-STRING'
-     *
-     * @param {string} string
-     * @param {boolean} preserve_prefixed_underscores
-     * @returns {string}
-     */
-    static swapCase(string, preserve_prefixed_underscores = false) {
-        const self = LuckyCase;
-        let s;
-        if(preserve_prefixed_underscores) {
-            s = self.cutUnderscoresAtStart(string);
-        } else {
-            s = string;
-        }
-        let sp = s.split('');
-        for(let i = 0; i < sp.length; ++i) {
-            let char = sp[i];
-            if(char === '_') {
-                sp[i] = '-';
-            } else if(char === '-') {
-                sp[i] = '_';
-            } else if(self.isLowerCase(char)) {
-                sp[i] = self.toUpperCase(char);
-            } else if(self.isUpperCase(char)) {
-                sp[i] = self.toLowerCase(char);
-            }
-        }
-        sp = sp.join('');
-        if(preserve_prefixed_underscores) {
-            return self.getUnderscoresAtStart(string) + sp;
-        } else {
-            return sp;
-        }
-    }
+	/**
+	 * Swaps character cases in string
+	 *
+	 * lower case to upper case
+	 * upper case to lower case
+	 * dash to underscore
+	 * underscore to dash
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'THIS_ISaNeXAMPLE-STRING'
+	 *
+	 * @param {string} string
+	 * @param {boolean} preserve_prefixed_underscores
+	 * @returns {string}
+	 */
+	static swapCase(string, preserve_prefixed_underscores = false) {
+		const self = LuckyCase;
+		let s;
+		if (preserve_prefixed_underscores) {
+			s = self.cutUnderscoresAtStart(string);
+		} else {
+			s = string;
+		}
+		let sp = s.split('');
+		for (let i = 0; i < sp.length; ++i) {
+			let char = sp[i];
+			if (char === '_') {
+				sp[i] = '-';
+			} else if (char === '-') {
+				sp[i] = '_';
+			} else if (self.isLowerCase(char)) {
+				sp[i] = self.toUpperCase(char);
+			} else if (self.isUpperCase(char)) {
+				sp[i] = self.toLowerCase(char);
+			}
+		}
+		sp = sp.join('');
+		if (preserve_prefixed_underscores) {
+			return self.getUnderscoresAtStart(string) + sp;
+		} else {
+			return sp;
+		}
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // CONSTANTIZE
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// CONSTANTIZE
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Convert the string from any case
-     * into pascal case and casts it into a constant
-     *
-     * Does not work in all node js contexts because of scopes, where the constant is not available here.
-     * Then you might use eval(LuckyCase.toPascalCase) instead.
-     * Or you may use it with global defined variables, global.<variable_name>
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => ThisIsAnExampleString
-     *      'this/is_an/example_path' => ThisIsAnExamplePath
-     *
-     * @param {string} string
-     * @returns {any}
-     */
-    static constantize(string) {
-        const self = LuckyCase;
-        let s = string.replace(/\//g,'_');
-        let constant_string = self.toPascalCase(s, false);
-        return eval(constant_string);
-    }
+	/**
+	 * Convert the string from any case
+	 * into pascal case and casts it into a constant
+	 *
+	 * Does not work in all node js contexts because of scopes, where the constant is not available here.
+	 * Then you might use eval(LuckyCase.toPascalCase) instead.
+	 * Or you may use it with global defined variables, global.<variable_name>
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => ThisIsAnExampleString
+	 *      'this/is_an/example_path' => ThisIsAnExamplePath
+	 *
+	 * @param {string} string
+	 * @returns {any}
+	 */
+	static constantize(string) {
+		const self = LuckyCase;
+		let s = string.replace(/\//g, '_');
+		let constant_string = self.toPascalCase(s, false);
+		return eval(constant_string);
+	}
 
-    /**
-     * Deconverts the constant back into specified target type
-     *
-     * Does not work in special scopes in node js
-     *
-     * @example deconversion
-     *      ThisAweSomeConstant => 'thisAweSomeConstant'
-     *      function myFunction() {} => 'myFunction'
-     *
-     * @param {function} constant
-     * @param {string} case_type
-     * @returns {string}
-     */
-    static deconstantize(constant, case_type = LuckyCase.CAMEL_CASE) {
-        const self = LuckyCase;
-        let s;
-        if(typeof constant === 'function') {
-            s = constant.name;
-        } else {
-            throw new InvalidConstantError("Constant must be of type 'function'");
-        }
-        return self.convertCase(s, case_type);
-    }
+	/**
+	 * Deconverts the constant back into specified target type
+	 *
+	 * Does not work in special scopes in node js
+	 *
+	 * @example deconversion
+	 *      ThisAweSomeConstant => 'thisAweSomeConstant'
+	 *      function myFunction() {} => 'myFunction'
+	 *
+	 * @param {function} constant
+	 * @param {string} case_type
+	 * @returns {string}
+	 */
+	static deconstantize(constant, case_type = LuckyCase.CAMEL_CASE) {
+		const self = LuckyCase;
+		let s;
+		if (typeof constant === 'function') {
+			s = constant.name;
+		} else {
+			throw new InvalidConstantError("Constant must be of type 'function'");
+		}
+		return self.convertCase(s, case_type);
+	}
 
-    //----------------------------------------------------------------------------------------------------
-    // HELPERS
-    //----------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// HELPERS
+	//----------------------------------------------------------------------------------------------------
 
-    /**
-     * Return string without underscores at the start
-     *
-     * @param {string} string
-     * @returns {string} string without prefixed underscores
-     */
-    static cutUnderscoresAtStart(string) {
-        let underscore_counter = 0;
-        const characters = string.split('');
-        for (let c of characters) {
-            if (c === '_') {
-                ++underscore_counter;
-            } else {
-                break;
-            }
-        }
-        return string.substr(underscore_counter);
-    }
+	/**
+	 * Return string without underscores at the start
+	 *
+	 * @param {string} string
+	 * @returns {string} string without prefixed underscores
+	 */
+	static cutUnderscoresAtStart(string) {
+		let underscore_counter = 0;
+		const characters = string.split('');
+		for (let c of characters) {
+			if (c === '_') {
+				++underscore_counter;
+			} else {
+				break;
+			}
+		}
+		return string.substr(underscore_counter);
+	}
 
-    /**
-     * Return the underscores at the start of the string
-     *
-     * @param {string} string
-     * @returns {string} string of underscores or empty if none found
-     */
-    static getUnderscoresAtStart(string) {
-        let underscores = '';
-        for (let c of string.split('')) {
-            if (c === '_') {
-                underscores += '_';
-            } else {
-                break;
-            }
-        }
-        return underscores;
-    }
+	/**
+	 * Return the underscores at the start of the string
+	 *
+	 * @param {string} string
+	 * @returns {string} string of underscores or empty if none found
+	 */
+	static getUnderscoresAtStart(string) {
+		let underscores = '';
+		for (let c of string.split('')) {
+			if (c === '_') {
+				underscores += '_';
+			} else {
+				break;
+			}
+		}
+		return underscores;
+	}
 
-    /**
-     * Split the string into parts
-     * It is splitted by all (different) case separators
-     *
-     * @param {string} string
-     * @returns {string[]}
-     */
-    static splitCaseString(string) {
-        const self = LuckyCase;
-        let s = self.cutUnderscoresAtStart(string);
-        if (!self.isUpperCase(s)) {
-            // prepend all upper characters with underscore
-            s = s.replace(makeUpperLowerRegExp(`([::upper::])`), "_$1");
-        }
-        s = s.replace(/ /g,'_');  // replace all spaces with underscore
-        s = s.replace(/\-/g,'_'); // replace all dashes with underscore
-        s = self.cutUnderscoresAtStart(s);
-        return s.toLocaleLowerCase().split('_').filter((el) => { return !!el; }); // split everything by underscore
-    }
+	/**
+	 * Split the string into parts
+	 * It is splitted by all (different) case separators
+	 *
+	 * @param {string} string
+	 * @returns {string[]}
+	 */
+	static splitCaseString(string) {
+		const self = LuckyCase;
+		let s = self.cutUnderscoresAtStart(string);
+		if (!self.isUpperCase(s)) {
+			// prepend all upper characters with underscore
+			s = s.replace(makeUpperLowerRegExp(`([::upper::])`), "_$1");
+		}
+		s = s.replace(/ /g, '_');  // replace all spaces with underscore
+		s = s.replace(/\-/g, '_'); // replace all dashes with underscore
+		s = self.cutUnderscoresAtStart(s);
+		return s.toLocaleLowerCase().split('_').filter((el) => { return !!el; }); // split everything by underscore
+	}
 
-    /**
-     * Check if the given case matches the string
-     *
-     * @param {string} string
-     * @param {string} case_type
-     * @returns {boolean}
-     * @private
-     */
-    static _isCaseMatch(string, case_type) {
-        const self = LuckyCase;
-        if(self.isValidCaseType(case_type)) {
-            const regex = self.CASES[case_type];
-            regex.lastIndex = 0; // reset state
-            return self.CASES[case_type].test(string);
-        } else if(self.FORMATS[case_type]) {
-            const regex = self.FORMATS[case_type];
-            regex.lastIndex = 0;
-            return self.FORMATS[case_type].test(string);
-        } else {
-            const error_message = `Invalid case type '${case_type}'. Valid types are: ${Object.keys(self.CASES).join(', ')}`;
-            throw new InvalidCaseError(error_message);
-        }
-    }
+	/**
+	 * Check if the given case matches the string
+	 *
+	 * @param {string} string
+	 * @param {string} case_type
+	 * @returns {boolean}
+	 * @private
+	 */
+	static _isCaseMatch(string, case_type) {
+		const self = LuckyCase;
+		if (self.isValidCaseType(case_type)) {
+			const regex = self.CASES[case_type];
+			regex.lastIndex = 0; // reset state
+			return self.CASES[case_type].test(string);
+		} else if (self.FORMATS[case_type]) {
+			const regex = self.FORMATS[case_type];
+			regex.lastIndex = 0;
+			return self.FORMATS[case_type].test(string);
+		} else {
+			const error_message = `Invalid case type '${case_type}'. Valid types are: ${Object.keys(self.CASES).join(', ')}`;
+			throw new InvalidCaseError(error_message);
+		}
+	}
 
-    /**
-     * Return a random sample from given array
-     *
-     * @param {Array} array
-     * @returns {*} sample item of given array
-     * @private
-     */
-    static _sampleFromArray(array) {
-        return array[Math.floor(Math.random() * array.length)];
-    }
+	/**
+	 * Return a random sample from given array
+	 *
+	 * @param {Array} array
+	 * @returns {*} sample item of given array
+	 * @private
+	 */
+	static _sampleFromArray(array) {
+		return array[Math.floor(Math.random() * array.length)];
+	}
 }
 
 /**
@@ -1696,30 +1703,30 @@ LuckyCase._lower = "\\u0061-\\u007A\\u00B5\\u00DF-\\u00F6\\u00F8-\\u00FF\\u0101\
 LuckyCase._upper = "\\u0041-\\u005A\\u00C0-\\u00D6\\u00D8-\\u00DE\\u0100\\u0102\\u0104\\u0106\\u0108\\u010A\\u010C\\u010E\\u0110\\u0112\\u0114\\u0116\\u0118\\u011A\\u011C\\u011E\\u0120\\u0122\\u0124\\u0126\\u0128\\u012A\\u012C\\u012E\\u0130\\u0132\\u0134\\u0136\\u0139\\u013B\\u013D\\u013F\\u0141\\u0143\\u0145\\u0147\\u014A\\u014C\\u014E\\u0150\\u0152\\u0154\\u0156\\u0158\\u015A\\u015C\\u015E\\u0160\\u0162\\u0164\\u0166\\u0168\\u016A\\u016C\\u016E\\u0170\\u0172\\u0174\\u0176\\u0178-\\u0179\\u017B\\u017D\\u0181-\\u0182\\u0184\\u0186-\\u0187\\u0189-\\u018B\\u018E-\\u0191\\u0193-\\u0194\\u0196-\\u0198\\u019C-\\u019D\\u019F-\\u01A0\\u01A2\\u01A4\\u01A6-\\u01A7\\u01A9\\u01AC\\u01AE-\\u01AF\\u01B1-\\u01B3\\u01B5\\u01B7-\\u01B8\\u01BC\\u01C4\\u01C7\\u01CA\\u01CD\\u01CF\\u01D1\\u01D3\\u01D5\\u01D7\\u01D9\\u01DB\\u01DE\\u01E0\\u01E2\\u01E4\\u01E6\\u01E8\\u01EA\\u01EC\\u01EE\\u01F1\\u01F4\\u01F6-\\u01F8\\u01FA\\u01FC\\u01FE\\u0200\\u0202\\u0204\\u0206\\u0208\\u020A\\u020C\\u020E\\u0210\\u0212\\u0214\\u0216\\u0218\\u021A\\u021C\\u021E\\u0220\\u0222\\u0224\\u0226\\u0228\\u022A\\u022C\\u022E\\u0230\\u0232\\u023A-\\u023B\\u023D-\\u023E\\u0241\\u0243-\\u0246\\u0248\\u024A\\u024C\\u024E\\u0370\\u0372\\u0376\\u037F\\u0386\\u0388-\\u038A\\u038C\\u038E-\\u038F\\u0391-\\u03A1\\u03A3-\\u03AB\\u03CF\\u03D2-\\u03D4\\u03D8\\u03DA\\u03DC\\u03DE\\u03E0\\u03E2\\u03E4\\u03E6\\u03E8\\u03EA\\u03EC\\u03EE\\u03F4\\u03F7\\u03F9-\\u03FA\\u03FD-\\u042F\\u0460\\u0462\\u0464\\u0466\\u0468\\u046A\\u046C\\u046E\\u0470\\u0472\\u0474\\u0476\\u0478\\u047A\\u047C\\u047E\\u0480\\u048A\\u048C\\u048E\\u0490\\u0492\\u0494\\u0496\\u0498\\u049A\\u049C\\u049E\\u04A0\\u04A2\\u04A4\\u04A6\\u04A8\\u04AA\\u04AC\\u04AE\\u04B0-\\u04D4\\u04D6\\u04D8\\u04DA\\u04DC\\u04DE\\u04E0\\u04E2\\u04E4\\u04E6\\u04E8\\u04EA\\u04EC\\u04EE\\u04F0\\u04F2\\u04F4\\u04F6\\u04F8\\u04FA\\u04FC\\u04FE\\u0500\\u0502\\u0504\\u0506\\u0508\\u050A\\u050C\\u050E\\u0510\\u0512\\u0514\\u0516\\u0518\\u051A\\u051C\\u051E\\u0520\\u0522\\u0524\\u0526\\u0528\\u052A\\u052C\\u052E\\u0531-\\u0556\\u0C80-\\u0CB2\\u10A0-\\u10C5\\u10C7\\u10CD\\u13A0-\\u13F5\\u18A0-\\u18BF\\u1C90-\\u1CBA\\u1CBD-\\u1CBF\\u1E00\\u1E02\\u1E04\\u1E06\\u1E08\\u1E0A\\u1E0C\\u1E0E\\u1E10\\u1E12\\u1E14\\u1E16\\u1E18\\u1E1A\\u1E1C\\u1E1E\\u1E20\\u1E22\\u1E24\\u1E26\\u1E28\\u1E2A\\u1E2C\\u1E2E\\u1E30\\u1E32\\u1E34\\u1E36\\u1E38\\u1E3A\\u1E3C\\u1E3E\\u1E40\\u1E42\\u1E44\\u1E46\\u1E48\\u1E4A\\u1E4C\\u1E4E\\u1E50\\u1E52\\u1E54\\u1E56\\u1E58\\u1E5A\\u1E5C\\u1E5E\\u1E60\\u1E62\\u1E64\\u1E66\\u1E68\\u1E6A\\u1E6C\\u1E6E\\u1E70\\u1E72\\u1E74\\u1E76\\u1E78\\u1E7A\\u1E7C\\u1E7E\\u1E80\\u1E82\\u1E84\\u1E86\\u1E88\\u1E8A\\u1E8C\\u1E8E\\u1E90\\u1E92\\u1E94\\u1E9E\\u1EA0\\u1EA2\\u1EA4\\u1EA6\\u1EA8\\u1EAA\\u1EAC\\u1EAE\\u1EB0\\u1EB2\\u1EB4\\u1EB6\\u1EB8\\u1EBA\\u1EBC\\u1EBE\\u1EC0\\u1EC2\\u1EC4\\u1EC6\\u1EC8\\u1ECA\\u1ECC\\u1ECE\\u1ED0\\u1ED2\\u1ED4\\u1ED6\\u1ED8\\u1EDA\\u1EDC\\u1EDE\\u1EE0\\u1EE2\\u1EE4\\u1EE6\\u1EE8\\u1EEA\\u1EEC\\u1EEE\\u1EF0\\u1EF2\\u1EF4\\u1EF6\\u1EF8\\u1EFA\\u1EFC\\u1EFE\\u1F08-\\u1F0F\\u1F18-\\u1F1D\\u1F28-\\u1F2F\\u1F38-\\u1F3F\\u1F48-\\u1F4D\\u1F59\\u1F5B\\u1F5D\\u1F5F\\u1F68-\\u1F6F\\u1FB8-\\u1FBB\\u1FC8-\\u1FCB\\u1FD8-\\u1FDB\\u1FE8-\\u1FEC\\u1FF8-\\u1FFB\\u2102\\u2107\\u210B-\\u210D\\u2110-\\u2112\\u2115\\u2119-\\u211D\\u2124\\u2126\\u2128\\u212A-\\u212D\\u2130-\\u2133\\u213E-\\u213F\\u2145\\u2183\\u2C00-\\u2C2E\\u2C60\\u2C62-\\u2C64\\u2C67\\u2C69\\u2C6B\\u2C6D-\\u2C70\\u2C72\\u2C75\\u2C7E-\\u2C80\\u2C82\\u2C84\\u2C86\\u2C88\\u2C8A\\u2C8C\\u2C8E\\u2C90\\u2C92\\u2C94\\u2C96\\u2C98\\u2C9A\\u2C9C\\u2C9E\\u2CA0\\u2CA2\\u2CA4\\u2CA6\\u2CA8\\u2CAA\\u2CAC\\u2CAE\\u2CB0\\u2CB2\\u2CB4\\u2CB6\\u2CB8\\u2CBA\\u2CBC\\u2CBE\\u2CC0\\u2CC2\\u2CC4\\u2CC6\\u2CC8\\u2CCA\\u2CCC\\u2CCE\\u2CD0\\u2CD2\\u2CD4\\u2CD6\\u2CD8\\u2CDA\\u2CDC\\u2CDE\\u2CE0\\u2CE2\\u2CEB\\u2CED\\u2CF2\\u6E40-\\u6E5F\\uA640\\uA642\\uA644\\uA646\\uA648\\uA64A\\uA64C\\uA64E\\uA650\\uA652\\uA654\\uA656\\uA658\\uA65A\\uA65C\\uA65E\\uA660\\uA662\\uA664\\uA666\\uA668\\uA66A\\uA66C\\uA680\\uA682\\uA684\\uA686\\uA688\\uA68A\\uA68C\\uA68E\\uA690\\uA692\\uA694\\uA696\\uA698\\uA69A\\uA722\\uA724\\uA726\\uA728\\uA72A\\uA72C\\uA72E\\uA732\\uA734\\uA736\\uA738\\uA73A\\uA73C\\uA73E\\uA740\\uA742\\uA744\\uA746\\uA748\\uA74A\\uA74C\\uA74E\\uA750\\uA752\\uA754\\uA756\\uA758\\uA75A\\uA75C\\uA75E\\uA760\\uA762\\uA764\\uA766\\uA768\\uA76A\\uA76C\\uA76E\\uA779\\uA77B\\uA77D-\\uA77E\\uA780\\uA782\\uA784\\uA786\\uA78B\\uA78D\\uA790\\uA792\\uA796\\uA798\\uA79A\\uA79C\\uA79E\\uA7A0\\uA7A2\\uA7A4\\uA7A6\\uA7A8\\uA7AA-\\uA7AE\\uA7B0-\\uA7B4\\uA7B6\\uA7B8\\uA7BA\\uA7BC\\uA7BE\\uA7C2\\uA7C4-\\uA7C6\\uD400-\\uD419\\uD434-\\uD44D\\uD468-\\uD481\\uD49C\\uD49E-\\uD49F\\uD4A2\\uD4A5-\\uD4A6\\uD4A9-\\uD4AC\\uD4AE-\\uD4B5\\uD4D0-\\uD4E9\\uD504-\\uD505\\uD507-\\uD50A\\uD50D-\\uD514\\uD516-\\uD51C\\uD538-\\uD539\\uD53B-\\uD53E\\uD540-\\uD544\\uD546\\uD54A-\\uD550\\uD56C-\\uD585\\uD5A0-\\uD5B9\\uD5D4-\\uD5ED\\uD608-\\uD621\\uD63C-\\uD655\\uD670-\\uD689\\uD6A8-\\uD6C0\\uD6E2-\\uD6FA\\uD71C-\\uD734\\uD756-\\uD76E\\uD790-\\uD7A8\\uD7CA\\uE900-\\uE921\\uFF21-\\uFF3A";
 
 function makeUpperLowerRegExp(regex_string) {
-    return new RegExp(regex_string.replace(/::lower::/g, LuckyCase._lower).replace(/::upper::/g, LuckyCase._upper), 'g');
+	return new RegExp(regex_string.replace(/::lower::/g, LuckyCase._lower).replace(/::upper::/g, LuckyCase._upper), 'g');
 }
 
 // regexp for cases
 LuckyCase.CASES = {
-    SNAKE_CASE: makeUpperLowerRegExp("^[::lower::]{1}[::lower::_0-9]+$"),
-    UPPER_SNAKE_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::upper::_0-9]+$"),
-    PASCAL_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::upper::::lower::0-9]+$"),
-    CAMEL_CASE: makeUpperLowerRegExp("^[::lower::]{1}[::upper::::lower::0-9]+$"),
-    DASH_CASE: makeUpperLowerRegExp("^([::lower::]){1}[::lower::\\-0-9]*[::lower::0-9]+$"),
-    UPPER_DASH_CASE: makeUpperLowerRegExp("^([::upper::]){1}[::upper::\\-0-9]*[::upper::0-9]+$"),
-    TRAIN_CASE: makeUpperLowerRegExp("^([::upper::][::lower::0-9]*\\-|[0-9]+\\-)*([::upper::][::lower::0-9]*)$"),
-    WORD_CASE: makeUpperLowerRegExp("^[::lower::]{1}[::lower:: 0-9]+$"),
-    UPPER_WORD_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::upper:: 0-9]+$"),
-    CAPITAL_WORD_CASE: makeUpperLowerRegExp("^([::upper::][::lower::0-9]*\\ |[0-9]+\\ )*([::upper::][::lower::0-9]*)$"),
-    SENTENCE_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::lower:: 0-9]+$"),
-    MIXED_CASE: makeUpperLowerRegExp("^[::upper::::lower::][::upper::::lower::_\\-0-9 ]*$"),
+	SNAKE_CASE: makeUpperLowerRegExp("^[::lower::]{1}[::lower::_0-9]+$"),
+	UPPER_SNAKE_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::upper::_0-9]+$"),
+	PASCAL_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::upper::::lower::0-9]+$"),
+	CAMEL_CASE: makeUpperLowerRegExp("^[::lower::]{1}[::upper::::lower::0-9]+$"),
+	DASH_CASE: makeUpperLowerRegExp("^([::lower::]){1}[::lower::\\-0-9]*[::lower::0-9]+$"),
+	UPPER_DASH_CASE: makeUpperLowerRegExp("^([::upper::]){1}[::upper::\\-0-9]*[::upper::0-9]+$"),
+	TRAIN_CASE: makeUpperLowerRegExp("^([::upper::][::lower::0-9]*\\-|[0-9]+\\-)*([::upper::][::lower::0-9]*)$"),
+	WORD_CASE: makeUpperLowerRegExp("^[::lower::]{1}[::lower:: 0-9]+$"),
+	UPPER_WORD_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::upper:: 0-9]+$"),
+	CAPITAL_WORD_CASE: makeUpperLowerRegExp("^([::upper::][::lower::0-9]*\\ |[0-9]+\\ )*([::upper::][::lower::0-9]*)$"),
+	SENTENCE_CASE: makeUpperLowerRegExp("^[::upper::]{1}[::lower:: 0-9]+$"),
+	MIXED_CASE: makeUpperLowerRegExp("^[::upper::::lower::][::upper::::lower::_\\-0-9 ]*$"),
 }
 
 // regexp for formats
 LuckyCase.FORMATS = {
-    CAPITAL: makeUpperLowerRegExp("^[::upper::]{1}.*$"),
-    UPPER_CASE: makeUpperLowerRegExp("^[^::lower::]+$"),
-    LOWER_CASE: makeUpperLowerRegExp("^[^::upper::]+$"),
+	CAPITAL: makeUpperLowerRegExp("^[::upper::]{1}.*$"),
+	UPPER_CASE: makeUpperLowerRegExp("^[^::lower::]+$"),
+	LOWER_CASE: makeUpperLowerRegExp("^[^::upper::]+$"),
 }
 
 // constants for case_types
@@ -1745,19 +1752,19 @@ LuckyCase.LOWER_CASE = 'LOWER_CASE';
 
 
 class InvalidCaseError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "InvalidCaseError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "InvalidCaseError";
+	}
 }
 
 
 
 class InvalidConstantError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "InvalidConstantError";
-    }
+	constructor(message) {
+		super(message);
+		this.name = "InvalidConstantError";
+	}
 }
 
 
@@ -1782,283 +1789,283 @@ class InvalidConstantError extends Error {
  *
  */
 class Typifier {
-    /**
-     * Get the version of the used library
-     * @returns {string}
-     */
-    static getVersion() {
-        const self = Typifier;
-        return self._version;
-    }
+	/**
+	 * Get the version of the used library
+	 * @returns {string}
+	 */
+	static getVersion() {
+		const self = Typifier;
+		return self._version;
+	}
 
-    /**
-     * Check if given variable is of type Array
-     *
-     * @param {any} value
-     * @returns {boolean} true if Array, otherwise false
-     */
-    static isArray(value) {
-        return value instanceof Array && value.constructor.name === 'Array';
-    }
+	/**
+	 * Check if given variable is of type Array
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if Array, otherwise false
+	 */
+	static isArray(value) {
+		return value instanceof Array && value.constructor.name === 'Array';
+	}
 
-    /**
-     * Check if given variable is of type Object
-     *
-     * @param {any} value
-     * @returns {boolean} true if Object, otherwise false
-     */
-    static isObject(value) {
-        return value instanceof Object && value.constructor.name === 'Object';
-    }
+	/**
+	 * Check if given variable is of type Object
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if Object, otherwise false
+	 */
+	static isObject(value) {
+		return value instanceof Object && value.constructor.name === 'Object';
+	}
 
-    /**
-     * Check if given variable is of type string (primitive)
-     *
-     * @param {any} value
-     * @returns {boolean} true if 'string', otherwise false
-     */
-    static isString(value) {
-        return typeof value === 'string';
-    }
+	/**
+	 * Check if given variable is of type string (primitive)
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if 'string', otherwise false
+	 */
+	static isString(value) {
+		return typeof value === 'string';
+	}
 
-    /**
-     * Check if given variable is of type String (class instance)
-     *
-     * @param {any} value
-     * @returns {boolean} true if instance of class 'String', otherwise false
-     */
-    static isStringClass(value) {
-        return value instanceof Object && value.constructor.name === 'String';
-    }
+	/**
+	 * Check if given variable is of type String (class instance)
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if instance of class 'String', otherwise false
+	 */
+	static isStringClass(value) {
+		return value instanceof Object && value.constructor.name === 'String';
+	}
 
-    /**
-     * Check if given variable is of type number (primitive)
-     *
-     * @param {any} value
-     * @returns {boolean} true if 'number', otherwise false
-     */
-    static isNumber(value) {
-        const self = Typifier;
-        return typeof value === 'number' && !self.isNaN(value) && !self.isInfinity(value);
-    }
+	/**
+	 * Check if given variable is of type number (primitive)
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if 'number', otherwise false
+	 */
+	static isNumber(value) {
+		const self = Typifier;
+		return typeof value === 'number' && !self.isNaN(value) && !self.isInfinity(value);
+	}
 
-    /**
-     * Check if given variable is of type Number (class instance)
-     *
-     * @param {any} value
-     * @returns {boolean} true if instance of class 'Number', otherwise false
-     */
-    static isNumberClass(value) {
-        return value instanceof Object && value.constructor.name === 'Number';
-    }
+	/**
+	 * Check if given variable is of type Number (class instance)
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if instance of class 'Number', otherwise false
+	 */
+	static isNumberClass(value) {
+		return value instanceof Object && value.constructor.name === 'Number';
+	}
 
-    /**
-     * Check if given variable is a valid number inside a string that evaluates to a number in Javascript.
-     *
-     * @example
-     *      // valid number strings
-     *      '200'
-     *      '25.75'
-     *      '10.'
-     *      '.5'
-     *      '500_000'
-     *      '0x12F'
-     *
-     * @param {any} value
-     * @returns {boolean} true if valid JavaScript number inside string
-     */
-    static isNumberString(value) {
-        const self = Typifier;
-        if(!(self.isString(value) || self.isStringClass(value))) return false;
-        const number_regex = /^[0-9._]+$/g;
-        const hex_regex = /^0[xX][0-9A-Fa-f]+$/g;
-        if(value.match(number_regex) || value.match(hex_regex)) {
-            try {
-                eval(value);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * Check if given variable is a valid number inside a string that evaluates to a number in Javascript.
+	 *
+	 * @example
+	 *      // valid number strings
+	 *      '200'
+	 *      '25.75'
+	 *      '10.'
+	 *      '.5'
+	 *      '500_000'
+	 *      '0x12F'
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if valid JavaScript number inside string
+	 */
+	static isNumberString(value) {
+		const self = Typifier;
+		if (!(self.isString(value) || self.isStringClass(value))) return false;
+		const number_regex = /^[0-9._]+$/g;
+		const hex_regex = /^0[xX][0-9A-Fa-f]+$/g;
+		if (value.match(number_regex) || value.match(hex_regex)) {
+			try {
+				eval(value);
+				return true;
+			} catch (e) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
 
-    /**
-     * Check if given variable is of type Date
-     *
-     * @param {any} value
-     * @returns {boolean} true if Date, otherwise false
-     */
-    static isDate(value) {
-        return value instanceof Date;
-    }
+	/**
+	 * Check if given variable is of type Date
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if Date, otherwise false
+	 */
+	static isDate(value) {
+		return value instanceof Date;
+	}
 
-    /**
-     * Check if given variable is of type RegExp
-     *
-     * @param {any} value
-     * @returns {boolean} true if RegExp, otherwise false
-     */
-    static isRegExp(value) {
-        return value instanceof RegExp;
-    }
+	/**
+	 * Check if given variable is of type RegExp
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if RegExp, otherwise false
+	 */
+	static isRegExp(value) {
+		return value instanceof RegExp;
+	}
 
-    /**
-     * Check if given variable is of type NaN
-     *
-     * @param {any} value
-     * @returns {boolean} true if NaN, otherwise false
-     */
-    static isNaN(value) {
-        return typeof value === 'number' && (value).toString() === 'NaN';
-    }
+	/**
+	 * Check if given variable is of type NaN
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if NaN, otherwise false
+	 */
+	static isNaN(value) {
+		return typeof value === 'number' && (value).toString() === 'NaN';
+	}
 
-    /**
-     * Check if given variable is of type Infinity
-     *
-     * @param {any} value
-     * @returns {boolean} true if Infinity, otherwise false
-     */
-    static isInfinity(value) {
-        return value === Infinity;
-    }
+	/**
+	 * Check if given variable is of type Infinity
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if Infinity, otherwise false
+	 */
+	static isInfinity(value) {
+		return value === Infinity;
+	}
 
-    /**
-     * Check if given variable is of type undefined
-     *
-     * @param {any} value
-     * @returns {boolean} true if undefined, otherwise false
-     */
-    static isUndefined(value) {
-        return typeof value === 'undefined';
-    }
+	/**
+	 * Check if given variable is of type undefined
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if undefined, otherwise false
+	 */
+	static isUndefined(value) {
+		return typeof value === 'undefined';
+	}
 
-    /**
-     * Check if given variable is of type null
-     *
-     * @param {any} value
-     * @returns {boolean} true if null, otherwise false
-     */
-    static isNull(value) {
-        return typeof value === 'object' && value === null;
-    }
+	/**
+	 * Check if given variable is of type null
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if null, otherwise false
+	 */
+	static isNull(value) {
+		return typeof value === 'object' && value === null;
+	}
 
-    /**
-     * Check if given variable is of type boolean (primitive)
-     *
-     * @param {any} value
-     * @returns {boolean} true if 'boolean' or instance of class 'Boolean', otherwise false
-     */
-    static isBoolean(value) {
-        return typeof value === 'boolean' || (value instanceof Object && value.constructor.name === 'Boolean');
-    }
+	/**
+	 * Check if given variable is of type boolean (primitive)
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if 'boolean' or instance of class 'Boolean', otherwise false
+	 */
+	static isBoolean(value) {
+		return typeof value === 'boolean' || (value instanceof Object && value.constructor.name === 'Boolean');
+	}
 
-    /**
-     * Check if given variable is of type Boolean (class instance)
-     *
-     * @param {any} value
-     * @returns {boolean} true if instance of class 'Boolean', otherwise false
-     */
-    static isBooleanClass(value) {
-        return value instanceof Object && value.constructor.name === 'Boolean';
-    }
+	/**
+	 * Check if given variable is of type Boolean (class instance)
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if instance of class 'Boolean', otherwise false
+	 */
+	static isBooleanClass(value) {
+		return value instanceof Object && value.constructor.name === 'Boolean';
+	}
 
-    /**
-     * Check if given variable is of type function
-     *
-     * @param {any} value
-     * @returns {boolean} true if function, otherwise false
-     */
-    static isFunction(value) {
-        return typeof value === 'function' && value.constructor.name === 'Function' && (typeof value.prototype === 'undefined' || value.prototype && value.prototype.constructor && ! value.prototype.constructor.name);
-    }
+	/**
+	 * Check if given variable is of type function
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if function, otherwise false
+	 */
+	static isFunction(value) {
+		return typeof value === 'function' && value.constructor.name === 'Function' && (typeof value.prototype === 'undefined' || value.prototype && value.prototype.constructor && !value.prototype.constructor.name);
+	}
 
-    /**
-     * Check if given variable is of type class
-     *
-     * @param {any} value
-     * @returns {boolean} true if class, otherwise false
-     */
-    static isClass(value) {
-        return typeof value === 'function' && value.constructor.name === 'Function' && (value.prototype && value.prototype.constructor && value.prototype.constructor.name);
-    }
+	/**
+	 * Check if given variable is of type class
+	 *
+	 * @param {any} value
+	 * @returns {boolean} true if class, otherwise false
+	 */
+	static isClass(value) {
+		return typeof value === 'function' && value.constructor.name === 'Function' && (value.prototype && value.prototype.constructor && value.prototype.constructor.name);
+	}
 
-    /**
-     * Check if the given value is of the given type.
-     *
-     * @example
-     *  Typifier.is('Array',[1,2,3]) // => true
-     *
-     * @param {string} type
-     * @param {any} value
-     * @returns {boolean} true if the value is of the given type
-     */
-    static is(type, value) {
-        const self = Typifier;
-        return self.getType(value) === type;
-    }
+	/**
+	 * Check if the given value is of the given type.
+	 *
+	 * @example
+	 *  Typifier.is('Array',[1,2,3]) // => true
+	 *
+	 * @param {string} type
+	 * @param {any} value
+	 * @returns {boolean} true if the value is of the given type
+	 */
+	static is(type, value) {
+		const self = Typifier;
+		return self.getType(value) === type;
+	}
 
-    /**
-     * Get the type of the given value.
-     * Primitive types are lower case.
-     *
-     * @example
-     *  'Object'
-     * @example
-     *  'string'
-     *
-     * @param {any} value
-     * @returns {string} type in pascal case format
-     */
-    static getType(value) {
-        const self = Typifier;
-        if (self.isArray(value)) {
-            return 'Array';
-        } else if (self.isObject(value)) {
-            return 'Object';
-        } else if (self.isString(value)) {
-            return 'string';
-        } else if (self.isStringClass(value)) {
-            return 'String';
-        } else if (self.isNumber(value)) {
-            return 'number';
-        } else if (self.isNumberClass(value)) {
-            return 'Number';
-        } else if (self.isDate(value)) {
-            return 'Date';
-        } else if (self.isRegExp(value)) {
-            return 'RegExp';
-        } else if (self.isNaN(value)) {
-            return 'NaN';
-        } else if (self.isInfinity(value)) {
-            return 'Infinity';
-        } else if (self.isUndefined(value)) {
-            return 'undefined';
-        } else if (self.isNull(value)) {
-            return 'null';
-        } else if (self.isBoolean(value)) {
-            return 'boolean';
-        } else if (self.isBooleanClass(value)) {
-            return 'Boolean';
-        } else if (self.isFunction(value)) {
-            return 'function';
-        } else if (self.isClass(value)) {
-            return 'class';
-        } else {
-            let type = 'Unknown';
-            if (value && value.constructor) {
-                type = value.constructor.name;
-            } else if (value && value.prop && value.prop.constructor) {
-                type = value.prop.constructor;
-            } else if (value && value.prototype && value.prototype.constructor && value.prototype.constructor.name) {
-                type = value.prototype.constructor.name;
-            } else {
-                type = typeof value;
-            }
-            return LuckyCase.toPascalCase(type);
-        }
-    }
+	/**
+	 * Get the type of the given value.
+	 * Primitive types are lower case.
+	 *
+	 * @example
+	 *  'Object'
+	 * @example
+	 *  'string'
+	 *
+	 * @param {any} value
+	 * @returns {string} type in pascal case format
+	 */
+	static getType(value) {
+		const self = Typifier;
+		if (self.isArray(value)) {
+			return 'Array';
+		} else if (self.isObject(value)) {
+			return 'Object';
+		} else if (self.isString(value)) {
+			return 'string';
+		} else if (self.isStringClass(value)) {
+			return 'String';
+		} else if (self.isNumber(value)) {
+			return 'number';
+		} else if (self.isNumberClass(value)) {
+			return 'Number';
+		} else if (self.isDate(value)) {
+			return 'Date';
+		} else if (self.isRegExp(value)) {
+			return 'RegExp';
+		} else if (self.isNaN(value)) {
+			return 'NaN';
+		} else if (self.isInfinity(value)) {
+			return 'Infinity';
+		} else if (self.isUndefined(value)) {
+			return 'undefined';
+		} else if (self.isNull(value)) {
+			return 'null';
+		} else if (self.isBoolean(value)) {
+			return 'boolean';
+		} else if (self.isBooleanClass(value)) {
+			return 'Boolean';
+		} else if (self.isFunction(value)) {
+			return 'function';
+		} else if (self.isClass(value)) {
+			return 'class';
+		} else {
+			let type = 'Unknown';
+			if (value && value.constructor) {
+				type = value.constructor.name;
+			} else if (value && value.prop && value.prop.constructor) {
+				type = value.prop.constructor;
+			} else if (value && value.prototype && value.prototype.constructor && value.prototype.constructor.name) {
+				type = value.prototype.constructor.name;
+			} else {
+				type = typeof value;
+			}
+			return LuckyCase.toPascalCase(type);
+		}
+	}
 }
 
 /**
@@ -2091,54 +2098,54 @@ Typifier._version = "0.0.13";
  */
 
 Object.assign(Array.prototype, {
-    /**
-     * Returns a new array that is a one dimensional flattening of itself.
-     *
-     * Different to Javascript flat(), which only flattens one dimension.
-     *
-     * @returns {Array}
-     */
-    flatten() {
-        const recursiveFlat = (array) => {
-            if(!array) array = this;
-            const is_including_array = array.filter((el) => { return Typifier.isArray(el); }).length > 0;
-            if(is_including_array) {
-                return recursiveFlat(array.flat());
-            }
-            return array.flat();
-        }
-        return recursiveFlat();
-    }
+	/**
+	 * Returns a new array that is a one dimensional flattening of itself.
+	 *
+	 * Different to Javascript flat(), which only flattens one dimension.
+	 *
+	 * @returns {Array}
+	 */
+	flatten() {
+		const recursiveFlat = (array) => {
+			if (!array) array = this;
+			const is_including_array = array.filter((el) => { return Typifier.isArray(el); }).length > 0;
+			if (is_including_array) {
+				return recursiveFlat(array.flat());
+			}
+			return array.flat();
+		}
+		return recursiveFlat();
+	}
 });
 
 Object.assign(Array.prototype, {
-    /**
-     * Returns the max element of the array. All values must be of type number.
-     *
-     * @example
-     *      [3,7,2].getMax() // => 7
-     *
-     * @returns {number|null} returns null if array is empty
-     */
-    getMax() {
-        if(this.length === 0) return null;
-        return Math.max(...this);
-    }
+	/**
+	 * Returns the max element of the array. All values must be of type number.
+	 *
+	 * @example
+	 *      [3,7,2].getMax() // => 7
+	 *
+	 * @returns {number|null} returns null if array is empty
+	 */
+	getMax() {
+		if (this.length === 0) return null;
+		return Math.max(...this);
+	}
 });
 
 Object.assign(Array.prototype, {
-    /**
-     * Returns the min element of the array. All values must be of type number.
-     *
-     * @example
-     *      [3,7,2,9].getMin() // => 2
-     *
-     * @returns {number|null} returns null if array is empty
-     */
-    getMin() {
-        if(this.length === 0) return null;
-        return Math.min(...this);
-    }
+	/**
+	 * Returns the min element of the array. All values must be of type number.
+	 *
+	 * @example
+	 *      [3,7,2,9].getMin() // => 2
+	 *
+	 * @returns {number|null} returns null if array is empty
+	 */
+	getMin() {
+		if (this.length === 0) return null;
+		return Math.min(...this);
+	}
 });
 
 
@@ -2152,316 +2159,316 @@ Object.assign(Array.prototype, {
  */
 class File {
 
-    /**
-     * Delete file synchronously
-     *
-     * @param {string} file_name path to file
-     * @returns {string}
-     */
-    static delete(file_name, opt) {
-        const self = File;
-        RubyNice.ensureRunningInNodeJs();
-        Fs.unlinkSync(file_name);
-    }
+	/**
+	 * Delete file synchronously
+	 *
+	 * @param {string} file_name path to file
+	 * @returns {string}
+	 */
+	static delete(file_name, opt) {
+		const self = File;
+		RubyNice.ensureRunningInNodeJs();
+		Fs.unlinkSync(file_name);
+	}
 
-    /**
-     * Converts a pathname to an absolute pathname
-     *
-     * '~' are not resolved.
-     *
-     * @param {string} file_name path of the file to expand
-     * @param {string} dir_string optional starting point of the given path
-     * @returns {string} absolute pathname
-     *
-     */
-    static getAbsolutePath(file_name, dir_string) {
-        const self = File;
-        return self.expandPath(file_name, dir_string, { expand_user_dir: false });
-    }
+	/**
+	 * Converts a pathname to an absolute pathname
+	 *
+	 * '~' are not resolved.
+	 *
+	 * @param {string} file_name path of the file to expand
+	 * @param {string} dir_string optional starting point of the given path
+	 * @returns {string} absolute pathname
+	 *
+	 */
+	static getAbsolutePath(file_name, dir_string) {
+		const self = File;
+		return self.expandPath(file_name, dir_string, { expand_user_dir: false });
+	}
 
-    /**
-     * Returns the last access time for the file as a Date object.
-     *
-     * @param {string} file_name
-     * @returns {Date}
-     */
-    static getAccessTime(file_name) {
-        return Fs.lstatSync(file_name).atime;
-    }
+	/**
+	 * Returns the last access time for the file as a Date object.
+	 *
+	 * @param {string} file_name
+	 * @returns {Date}
+	 */
+	static getAccessTime(file_name) {
+		return Fs.lstatSync(file_name).atime;
+	}
 
-    /**
-     * Get the last component of the given file name
-     *
-     * @example
-     *  File.getBasename('/home/user/documents/letter.txt')
-     *  // => 'letter.txt'
-     *
-     * @example
-     *  File.getBasename('/home/user/documents/letter.txt','.txt')
-     *  // => 'letter'
-     *
-     * @example
-     *  File.getBasename('/home/user/documents/image.jpg','.*')
-     *  // => 'image'
-     *
-     * @param {string} file_name
-     * @param {string} suffix If suffix is given and present at the end of file_name, it is removed. If suffix is '.*', any extension will be removed.
-     */
-    static getBasename(file_name, suffix) {
-        const self = File;
-        file_name = self.normalizePath(file_name);
-        let base_name = file_name.split('/').filter(e=>e !== '').getLast();
-        if (suffix) {
-            if (suffix === '.*' && base_name.includes('.')) {
-                base_name = base_name.substring(0, base_name.lastIndexOf('.'));
-            } else if (base_name.endsWith(suffix)) {
-                base_name = base_name.substring(0, base_name.lastIndexOf(suffix));
-            }
-        }
-        return base_name;
-    }
+	/**
+	 * Get the last component of the given file name
+	 *
+	 * @example
+	 *  File.getBasename('/home/user/documents/letter.txt')
+	 *  // => 'letter.txt'
+	 *
+	 * @example
+	 *  File.getBasename('/home/user/documents/letter.txt','.txt')
+	 *  // => 'letter'
+	 *
+	 * @example
+	 *  File.getBasename('/home/user/documents/image.jpg','.*')
+	 *  // => 'image'
+	 *
+	 * @param {string} file_name
+	 * @param {string} suffix If suffix is given and present at the end of file_name, it is removed. If suffix is '.*', any extension will be removed.
+	 */
+	static getBasename(file_name, suffix) {
+		const self = File;
+		file_name = self.normalizePath(file_name);
+		let base_name = file_name.split('/').filter(e => e !== '').getLast();
+		if (suffix) {
+			if (suffix === '.*' && base_name.includes('.')) {
+				base_name = base_name.substring(0, base_name.lastIndexOf('.'));
+			} else if (base_name.endsWith(suffix)) {
+				base_name = base_name.substring(0, base_name.lastIndexOf(suffix));
+			}
+		}
+		return base_name;
+	}
 
-    /**
-     * Returns the birth time for the file as a Date object.
-     *
-     * @param {string} file_name
-     * @returns {Date}
-     */
-    static getBirthTime(file_name) {
-        return Fs.lstatSync(file_name).birthtime;
-    }
+	/**
+	 * Returns the birth time for the file as a Date object.
+	 *
+	 * @param {string} file_name
+	 * @returns {Date}
+	 */
+	static getBirthTime(file_name) {
+		return Fs.lstatSync(file_name).birthtime;
+	}
 
-    /**
-     * Get all components of the given file name except of the last one
-     *
-     * @example
-     *  File.getDirname('/home/user/documents/letter.txt')
-     *  // => '/home/user/documents'
-     *
-     * @example
-     *  File.getDirname('/home/user/documents/some_file_without_extension')
-     *  // => '/home/user/documents'
-     *
-     * @example
-     *  File.getDirname('/home/user/documents/')
-     *  // => '/home/user'
-     *
-     * @param {string} file_name
-     * @returns {string}
-     */
-    static getDirname(file_name) {
-        const self = File;
-        file_name = self.normalizePath(file_name);
-        return file_name.substring(0,self.normalizePath(file_name).lastIndexOf('/'));
-    }
+	/**
+	 * Get all components of the given file name except of the last one
+	 *
+	 * @example
+	 *  File.getDirname('/home/user/documents/letter.txt')
+	 *  // => '/home/user/documents'
+	 *
+	 * @example
+	 *  File.getDirname('/home/user/documents/some_file_without_extension')
+	 *  // => '/home/user/documents'
+	 *
+	 * @example
+	 *  File.getDirname('/home/user/documents/')
+	 *  // => '/home/user'
+	 *
+	 * @param {string} file_name
+	 * @returns {string}
+	 */
+	static getDirname(file_name) {
+		const self = File;
+		file_name = self.normalizePath(file_name);
+		return file_name.substring(0, self.normalizePath(file_name).lastIndexOf('/'));
+	}
 
-    /**
-     * Get the size of the given file in bytes
-     *
-     * @example
-     *  File.getSize('myFile.txt');
-     *  // => 12345
-     *
-     * @param {string} file_name
-     * @returns {number} size in bytes
-     */
-    static getSize(file_name) {
-        const self = File;
-        file_name = self.normalizePath(file_name);
-        return Fs.statSync(file_name).size;
-    }
+	/**
+	 * Get the size of the given file in bytes
+	 *
+	 * @example
+	 *  File.getSize('myFile.txt');
+	 *  // => 12345
+	 *
+	 * @param {string} file_name
+	 * @returns {number} size in bytes
+	 */
+	static getSize(file_name) {
+		const self = File;
+		file_name = self.normalizePath(file_name);
+		return Fs.statSync(file_name).size;
+	}
 
-    /**
-     * Converts a pathname to an absolute pathname
-     *
-     * '~' is resolved to the home directory, '~user' to the given users home directory.
-     *
-     * @param {string} file_name path of the file to expand
-     * @param {string} dir_string optional starting point of the given path
-     * @param {Object} options
-     * @param {boolean} expand_user_dir=true
-     * @returns {string} absolute pathname
-     *
-     */
-    static expandPath(file_name, dir_string = "", options = {}) {
-        const self = File;
-        if(!options) options = {};
-        if(typeof options.expand_user_dir === 'undefined') options.expand_user_dir = true;
-        file_name = self.normalizePath(file_name);
-        dir_string = self.normalizePath(dir_string);
-        if(file_name.startsWith('~') && dir_string && dir_string.startsWith('~')) {
-            return Path.resolve(self._resolveUserDirInPath(file_name));
-        } else {
-            file_name = dir_string ? self._resolveUserDirInPath(dir_string) + '/' + self._resolveUserDirInPath(file_name) : self._resolveUserDirInPath(file_name);
-            return Path.resolve(file_name);
-        }
-    }
+	/**
+	 * Converts a pathname to an absolute pathname
+	 *
+	 * '~' is resolved to the home directory, '~user' to the given users home directory.
+	 *
+	 * @param {string} file_name path of the file to expand
+	 * @param {string} dir_string optional starting point of the given path
+	 * @param {Object} options
+	 * @param {boolean} expand_user_dir=true
+	 * @returns {string} absolute pathname
+	 *
+	 */
+	static expandPath(file_name, dir_string = "", options = {}) {
+		const self = File;
+		if (!options) options = {};
+		if (typeof options.expand_user_dir === 'undefined') options.expand_user_dir = true;
+		file_name = self.normalizePath(file_name);
+		dir_string = self.normalizePath(dir_string);
+		if (file_name.startsWith('~') && dir_string && dir_string.startsWith('~')) {
+			return Path.resolve(self._resolveUserDirInPath(file_name));
+		} else {
+			file_name = dir_string ? self._resolveUserDirInPath(dir_string) + '/' + self._resolveUserDirInPath(file_name) : self._resolveUserDirInPath(file_name);
+			return Path.resolve(file_name);
+		}
+	}
 
-    /**
-     * Check if given file name exists and is a directory
-     *
-     * @param {string} file_name path of the file to check
-     * @returns {boolean} true if file exists and is a directory, otherwise false
-     *
-     */
-    static isDirectory(file_name) {
-        const self = File;
-        return self.isExisting(file_name) && Fs.lstatSync(file_name).isDirectory();
-    }
+	/**
+	 * Check if given file name exists and is a directory
+	 *
+	 * @param {string} file_name path of the file to check
+	 * @returns {boolean} true if file exists and is a directory, otherwise false
+	 *
+	 */
+	static isDirectory(file_name) {
+		const self = File;
+		return self.isExisting(file_name) && Fs.lstatSync(file_name).isDirectory();
+	}
 
-    /**
-     * Check if given file exists but has no content
-     *
-     * @param {string} file_name path of the file to check
-     * @returns {boolean} true if file exists and has zero content, otherwise false
-     *
-     */
-    static isEmpty(file_name) {
-        const self = File;
-        return self.isExisting(file_name) && self.getSize(file_name) === 0;
-    }
+	/**
+	 * Check if given file exists but has no content
+	 *
+	 * @param {string} file_name path of the file to check
+	 * @returns {boolean} true if file exists and has zero content, otherwise false
+	 *
+	 */
+	static isEmpty(file_name) {
+		const self = File;
+		return self.isExisting(file_name) && self.getSize(file_name) === 0;
+	}
 
-    /**
-     * Check if given file name exists
-     *
-     * @param {string} file_name path of the file to check
-     * @returns {boolean} true if file exists, otherwise false
-     *
-     */
-    static isExisting(file_name) {
-        return Fs.existsSync(file_name);
-    }
+	/**
+	 * Check if given file name exists
+	 *
+	 * @param {string} file_name path of the file to check
+	 * @returns {boolean} true if file exists, otherwise false
+	 *
+	 */
+	static isExisting(file_name) {
+		return Fs.existsSync(file_name);
+	}
 
-    /**
-     * Check if given file name exists and is a file
-     *
-     * @param {string} file_name path of the file to check
-     * @returns {boolean} true if file exists and is a file, otherwise false
-     *
-     */
-    static isFile(file_name) {
-        const self = File;
-        return self.isExisting(file_name) && Fs.lstatSync(file_name).isFile();
-    }
+	/**
+	 * Check if given file name exists and is a file
+	 *
+	 * @param {string} file_name path of the file to check
+	 * @returns {boolean} true if file exists and is a file, otherwise false
+	 *
+	 */
+	static isFile(file_name) {
+		const self = File;
+		return self.isExisting(file_name) && Fs.lstatSync(file_name).isFile();
+	}
 
-    /**
-     * Normalize path and replace all back slashes to slashes
-     * and remove trailing slashes
-     *
-     * @param {string} path
-     * @returns {string} normalized path
-     */
-    static normalizePath(path) {
-        const self = File;
-        return self._cutTrailingSlash(path.replace(/\\/g, '/'));
-    }
+	/**
+	 * Normalize path and replace all back slashes to slashes
+	 * and remove trailing slashes
+	 *
+	 * @param {string} path
+	 * @returns {string} normalized path
+	 */
+	static normalizePath(path) {
+		const self = File;
+		return self._cutTrailingSlash(path.replace(/\\/g, '/'));
+	}
 
-    /**
-     * Read file and return its content synchronously
-     *
-     * @param {string} file_name path to file
-     * @param {Object} opt
-     * @param {'utf8' | 'binary' | 'buffer' | 'base64'} opt.encoding='utf8'
-     * @param {Number} opt.length
-     * @param {Number} opt.offset
-     * @returns {string}
-     */
-    static read(file_name, opt) {
-        const self = File;
-        RubyNice.ensureRunningInNodeJs();
-        let encoding = 'utf8';
-        if (opt && ['binary', 'buffer'].includes(opt.encoding)) encoding = null;
-        let content = Fs.readFileSync(file_name, encoding);
-        if (opt && opt.encoding !== 'base64') {
-            if (opt.offset) content = content.slice(opt.offset);
-            if (opt.length) content = content.slice(0, opt.length);
-        }
-        return content;
-    }
+	/**
+	 * Read file and return its content synchronously
+	 *
+	 * @param {string} file_name path to file
+	 * @param {Object} opt
+	 * @param {'utf8' | 'binary' | 'buffer' | 'base64'} opt.encoding='utf8'
+	 * @param {Number} opt.length
+	 * @param {Number} opt.offset
+	 * @returns {string}
+	 */
+	static read(file_name, opt) {
+		const self = File;
+		RubyNice.ensureRunningInNodeJs();
+		let encoding = 'utf8';
+		if (opt && ['binary', 'buffer'].includes(opt.encoding)) encoding = null;
+		let content = Fs.readFileSync(file_name, encoding);
+		if (opt && opt.encoding !== 'base64') {
+			if (opt.offset) content = content.slice(opt.offset);
+			if (opt.length) content = content.slice(0, opt.length);
+		}
+		return content;
+	}
 
-    /**
-     * Rename the given file
-     *
-     * @param {string} file_name path to original file
-     * @param {string} new_path path to new file
-     */
-    static rename(file_name, new_path) {
-        const self = File;
-        RubyNice.ensureRunningInNodeJs();
-        Fs.renameSync(file_name, new_path);
-    }
+	/**
+	 * Rename the given file
+	 *
+	 * @param {string} file_name path to original file
+	 * @param {string} new_path path to new file
+	 */
+	static rename(file_name, new_path) {
+		const self = File;
+		RubyNice.ensureRunningInNodeJs();
+		Fs.renameSync(file_name, new_path);
+	}
 
-    /**
-     * Read a file and return as data URI that can be embedded on HTML for example
-     *
-     * @param {string} file_name path to file
-     * @returns {string} base64 encoded data URI
-     */
-    static readAsDataUri(file_name) {
-        const mime = Mime.getType(file_name);
-        if(mime) {
-            const data = Fs.readFileSync(file_name, 'base64');
-            return `data:${mime};base64,${data}`;
-        } else {
-            throw `No mime type found for file '${file_name}'`;
-        }
-    }
+	/**
+	 * Read a file and return as data URI that can be embedded on HTML for example
+	 *
+	 * @param {string} file_name path to file
+	 * @returns {string} base64 encoded data URI
+	 */
+	static readAsDataUri(file_name) {
+		const mime = Mime.getType(file_name);
+		if (mime) {
+			const data = Fs.readFileSync(file_name, 'base64');
+			return `data:${mime};base64,${data}`;
+		} else {
+			throw `No mime type found for file '${file_name}'`;
+		}
+	}
 
-    /**
-     * Write into file synchronously.
-     *
-     * @param {string} name path to file
-     * @param data {String|Buffer|TypedArray|DataView|Object} - data
-     * @param {Object} opt
-     * @param {'utf8' | 'binary' | 'buffer'} opt.encoding='utf8'
-     * @param {'rs+' | 'ws' | 'as'} opt.flag='ws'
-     * @returns {string}
-     */
-    static write(name, data, opt) {
-        const self = File;
-        RubyNice.ensureRunningInNodeJs();
-        let options = {encoding: 'utf8'};
-        if (opt) {
-            if (opt.flag) options.flag = opt.flag;
-            if (['binary', 'buffer'].includes(opt.encoding)) options.encoding = null;
-        }
-        return Fs.writeFileSync(name, data, options);
-    }
+	/**
+	 * Write into file synchronously.
+	 *
+	 * @param {string} name path to file
+	 * @param data {String|Buffer|TypedArray|DataView|Object} - data
+	 * @param {Object} opt
+	 * @param {'utf8' | 'binary' | 'buffer'} opt.encoding='utf8'
+	 * @param {'rs+' | 'ws' | 'as'} opt.flag='ws'
+	 * @returns {string}
+	 */
+	static write(name, data, opt) {
+		const self = File;
+		RubyNice.ensureRunningInNodeJs();
+		let options = { encoding: 'utf8' };
+		if (opt) {
+			if (opt.flag) options.flag = opt.flag;
+			if (['binary', 'buffer'].includes(opt.encoding)) options.encoding = null;
+		}
+		return Fs.writeFileSync(name, data, options);
+	}
 
-    /**
-     * Cut a trailing slash at the end of the path
-     *
-     * @param {string} path
-     * @private
-     */
-    static _cutTrailingSlash(path) {
-        if(path.endsWith('/')) {
-            return path.substring(0, path.length-1);
-        } else {
-            return path;
-        }
-    }
+	/**
+	 * Cut a trailing slash at the end of the path
+	 *
+	 * @param {string} path
+	 * @private
+	 */
+	static _cutTrailingSlash(path) {
+		if (path.endsWith('/')) {
+			return path.substring(0, path.length - 1);
+		} else {
+			return path;
+		}
+	}
 
-    /**
-     * Resolves '~' and '~username' to user dirs inside given path
-     *
-     * @param {string} path
-     * @returns {string}
-     * @private
-     */
-    static _resolveUserDirInPath(path) {
-        const self = File;
-        const user_home_regex = /^~([^\/]*)\//;
-        const user_dir_match = path.match(user_home_regex);
-        if(user_dir_match) {
-            if(user_dir_match[1]) {
-                path = self.getDirname(process.env.HOME) + '/' + user_dir_match[1] + '/' + path.replace(user_home_regex, '');
-            } else {
-                path = path.replace(user_home_regex, process.env.HOME + '/');
-            }
-        }
-        return path;
-    }
+	/**
+	 * Resolves '~' and '~username' to user dirs inside given path
+	 *
+	 * @param {string} path
+	 * @returns {string}
+	 * @private
+	 */
+	static _resolveUserDirInPath(path) {
+		const self = File;
+		const user_home_regex = /^~([^\/]*)\//;
+		const user_dir_match = path.match(user_home_regex);
+		if (user_dir_match) {
+			if (user_dir_match[1]) {
+				path = self.getDirname(process.env.HOME) + '/' + user_dir_match[1] + '/' + path.replace(user_home_regex, '');
+			} else {
+				path = path.replace(user_home_regex, process.env.HOME + '/');
+			}
+		}
+		return path;
+	}
 }
 
 
@@ -2475,95 +2482,95 @@ class File {
  */
 
 Object.defineProperty(Number.prototype, 'timesWithIndex', {
-    /**
-     * Loops n times
-     *
-     * Breaks if returning false
-     *
-     * @example
-     *      (5).timesWithIndex((index) => {
-     *          if(condition) return false;
-     *          console.log(index);
-     *      })
-     *
-     * @param {eachIndexLoopCallback} loop_function
-     * @returns {Number} returns itself
-     */
-    value: function timesWithIndex(loop_function) {
-        if (typeof loop_function === 'function') {
-            if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
-                for (let i = 0; i < this; ++i) {
-                    if (loop_function(i) === false) {
-                        break;
-                    }
-                }
-            } else {
-                console.warn(`${Typifier.getType(this)}.timesWithIndex is not a valid function`);
-            }
-        }
-        return this;
-    },
-    enumerable: false
+	/**
+	 * Loops n times
+	 *
+	 * Breaks if returning false
+	 *
+	 * @example
+	 *      (5).timesWithIndex((index) => {
+	 *          if(condition) return false;
+	 *          console.log(index);
+	 *      })
+	 *
+	 * @param {eachIndexLoopCallback} loop_function
+	 * @returns {Number} returns itself
+	 */
+	value: function timesWithIndex(loop_function) {
+		if (typeof loop_function === 'function') {
+			if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
+				for (let i = 0; i < this; ++i) {
+					if (loop_function(i) === false) {
+						break;
+					}
+				}
+			} else {
+				console.warn(`${Typifier.getType(this)}.timesWithIndex is not a valid function`);
+			}
+		}
+		return this;
+	},
+	enumerable: false
 });
 
 Object.defineProperty(Number.prototype, 'round', {
-    /**
-     * Wrapper for Math.round()
-     *
-     * @example
-     *      (5.6).round()
-     *      => 6
-     *
-     * @returns {Number}
-     */
-    value: function round() {
-            if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
-                return Math.round(this);
-            } else {
-                console.warn(`${Typifier.getType(this)}.round is not a valid function`);
-            }
-    },
-    enumerable: false
+	/**
+	 * Wrapper for Math.round()
+	 *
+	 * @example
+	 *      (5.6).round()
+	 *      => 6
+	 *
+	 * @returns {Number}
+	 */
+	value: function round() {
+		if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
+			return Math.round(this);
+		} else {
+			console.warn(`${Typifier.getType(this)}.round is not a valid function`);
+		}
+	},
+	enumerable: false
 });
 
 Object.defineProperty(Number.prototype, 'ceil', {
-    /**
-     * Wrapper for Math.ceil()
-     *
-     * @example
-     *      (5.1).ceil()
-     *      => 6
-     *
-     * @returns {Number}
-     */
-    value: function ceil() {
-            if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
-                return Math.ceil(this);
-            } else {
-                console.warn(`${Typifier.getType(this)}.ceil is not a valid function`);
-            }
-    },
-    enumerable: false
+	/**
+	 * Wrapper for Math.ceil()
+	 *
+	 * @example
+	 *      (5.1).ceil()
+	 *      => 6
+	 *
+	 * @returns {Number}
+	 */
+	value: function ceil() {
+		if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
+			return Math.ceil(this);
+		} else {
+			console.warn(`${Typifier.getType(this)}.ceil is not a valid function`);
+		}
+	},
+	enumerable: false
 });
 
 Object.defineProperty(Number.prototype, 'floor', {
-    /**
-     * Wrapper for Math.floor()
-     *
-     * @example
-     *      (5.7).floor()
-     *      => 5
-     *
-     * @returns {Number}
-     */
-    value: function floor() {
-            if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
-                return Math.floor(this);
-            } else {
-                console.warn(`${Typifier.getType(this)}.floor is not a valid function`);
-            }
-    },
-    enumerable: false
+	/**
+	 * Wrapper for Math.floor()
+	 *
+	 * @example
+	 *      (5.7).floor()
+	 *      => 5
+	 *
+	 * @returns {Number}
+	 */
+	value: function floor() {
+		if (Typifier.isNumber(this) || Typifier.isNumberClass(this)) {
+			return Math.floor(this);
+		} else {
+			console.warn(`${Typifier.getType(this)}.floor is not a valid function`);
+		}
+	},
+	enumerable: false
 });
 
 
@@ -2572,77 +2579,77 @@ Object.defineProperty(Number.prototype, 'floor', {
 
 
 Object.defineProperty(Object.prototype, 'eachWithIndex', {
-    /**
-     * Iterates over all elements of the object
-     *
-     * Breaks if returning false
-     *
-     * @example
-     *      { a: 'one', b: 'two', c: 'three'}.eachWithIndex((key, value, index) => {
-     *          if(condition) return false;
-     *          console.log(key, value);
-     *      })
-     *
-     * @param {eachObjectLoopCallback|eachArrayLoopCallback} loop_function
-     * @returns {Object<any>} returns itself
-     */
-    value: function eachWithIndex(loop_function) {
-        if (typeof loop_function === 'function') {
-            if (Typifier.isArray(this)) {
-                for (let i = 0; i < this.length; ++i) {
-                    const state = {state: false};
-                    if (loop_function(this[i], i, state) === false) {
-                        break;
-                    }
-                }
-            } else if (Typifier.isObject(this)) {
-                let index = 0;
-                for (const [key, value] of Object.entries(this)) {
-                    if (loop_function(key, value, index) === false) {
-                        break;
-                    }
-                    ++index;
-                }
-            } else {
-                console.warn(`${Typifier.getType(this)}.eachWithIndex is not a valid function`);
-            }
-        }
-        return this;
-    },
-    enumerable: false
+	/**
+	 * Iterates over all elements of the object
+	 *
+	 * Breaks if returning false
+	 *
+	 * @example
+	 *      { a: 'one', b: 'two', c: 'three'}.eachWithIndex((key, value, index) => {
+	 *          if(condition) return false;
+	 *          console.log(key, value);
+	 *      })
+	 *
+	 * @param {eachObjectLoopCallback|eachArrayLoopCallback} loop_function
+	 * @returns {Object<any>} returns itself
+	 */
+	value: function eachWithIndex(loop_function) {
+		if (typeof loop_function === 'function') {
+			if (Typifier.isArray(this)) {
+				for (let i = 0; i < this.length; ++i) {
+					const state = { state: false };
+					if (loop_function(this[i], i, state) === false) {
+						break;
+					}
+				}
+			} else if (Typifier.isObject(this)) {
+				let index = 0;
+				for (const [key, value] of Object.entries(this)) {
+					if (loop_function(key, value, index) === false) {
+						break;
+					}
+					++index;
+				}
+			} else {
+				console.warn(`${Typifier.getType(this)}.eachWithIndex is not a valid function`);
+			}
+		}
+		return this;
+	},
+	enumerable: false
 });
 
 Object.defineProperty(Object.prototype, 'mapObject', {
-    /**
-     * Maps over all elements of an object
-     *
-     * @example
-     *      { a: 'one', b: 'two', c: 'three'}.mapObject((key, value, index) => {
-     *          return value;
-     *      })
-     *      // => ['one','two','three']
-     *
-     * @param {eachObjectLoopCallback} loop_function
-     * @returns {Object<any>} returns itself
-     */
-    value: function mapObject(loop_function) {
-        if (typeof loop_function === 'function') {
-            if (Typifier.isObject(this)) {
-                const object_array = Object.entries(this).map((value, index) => { a = {}; a[value[0]] = value[1]; return a })
-                let result_array = [];
-                let index = 0;
-                for (const [key, value] of Object.entries(this)) {
-                    const result = loop_function(key, value, index);
-                    result_array.push(result);
-                    ++index;
-                }
-                return result_array;
-            } else {
-                console.warn(`${Typifier.getType(this)}.mapObject is not a valid function`);
-            }
-        }
-    },
-    enumerable: false
+	/**
+	 * Maps over all elements of an object
+	 *
+	 * @example
+	 *      { a: 'one', b: 'two', c: 'three'}.mapObject((key, value, index) => {
+	 *          return value;
+	 *      })
+	 *      // => ['one','two','three']
+	 *
+	 * @param {eachObjectLoopCallback} loop_function
+	 * @returns {Object<any>} returns itself
+	 */
+	value: function mapObject(loop_function) {
+		if (typeof loop_function === 'function') {
+			if (Typifier.isObject(this)) {
+				const object_array = Object.entries(this).map((value, index) => { a = {}; a[value[0]] = value[1]; return a })
+				let result_array = [];
+				let index = 0;
+				for (const [key, value] of Object.entries(this)) {
+					const result = loop_function(key, value, index);
+					result_array.push(result);
+					++index;
+				}
+				return result_array;
+			} else {
+				console.warn(`${Typifier.getType(this)}.mapObject is not a valid function`);
+			}
+		}
+	},
+	enumerable: false
 });
 
 /**
@@ -2653,114 +2660,114 @@ Object.defineProperty(Object.prototype, 'mapObject', {
  */
 
 Object.defineProperty(Object.prototype, 'getFirst', {
-    /**
-     * Returns the first element of the object
-     *
-     * @example
-     *      { a: 'one', b: 'two', c: 'three'}.getFirst() // => { a: 'one' }
-     *
-     * @returns {Object}
-     */
-    value: function getFirst() {
-        if(Typifier.is('Column', this)) return; // compatibility workaround for 'table-layout' package
-        if (Typifier.isArray(this) && this.length > 0) {
-            return this[0];
-        } else if (Typifier.isObject(this) && Object.entries(this).length > 0) {
-            const first = Object.entries(this)[0];
-            let a = {};
-            a[first[0]] = first[1];
-            return a;
-        } else {
-            console.warn(`${Typifier.getType(this)}.getFirst is not a valid function`);
-        }
-    },
-    enumerable: false
+	/**
+	 * Returns the first element of the object
+	 *
+	 * @example
+	 *      { a: 'one', b: 'two', c: 'three'}.getFirst() // => { a: 'one' }
+	 *
+	 * @returns {Object}
+	 */
+	value: function getFirst() {
+		if (Typifier.is('Column', this)) return; // compatibility workaround for 'table-layout' package
+		if (Typifier.isArray(this) && this.length > 0) {
+			return this[0];
+		} else if (Typifier.isObject(this) && Object.entries(this).length > 0) {
+			const first = Object.entries(this)[0];
+			let a = {};
+			a[first[0]] = first[1];
+			return a;
+		} else {
+			console.warn(`${Typifier.getType(this)}.getFirst is not a valid function`);
+		}
+	},
+	enumerable: false
 });
 
 Object.defineProperty(Object.prototype, 'getLast', {
-    /**
-     * Returns the last element of the object
-     *
-     * @example
-     *      { a: 'one', b: 'two', c: 'three'}.getLast() // => { c: 'three' }
-     *
-     * @returns {Object}
-     */
-    value: function getLast() {
-        if(Typifier.is('Column', this)) return; // compatibility workaround for 'table-layout' package
-        if (Typifier.isArray(this) && this.length > 0) {
-            return this[this.length - 1];
-        } else if (Typifier.isObject(this) && Object.entries(this).length > 0) {
-            const last = Object.entries(this)[Object.entries(this).length - 1];
-            let a = {};
-            a[last[0]] = last[1];
-            return a;
-        } else {
-            console.warn(`${Typifier.getType(this)}.getLast is not a valid function`);
-        }
-    },
-    enumerable: false
+	/**
+	 * Returns the last element of the object
+	 *
+	 * @example
+	 *      { a: 'one', b: 'two', c: 'three'}.getLast() // => { c: 'three' }
+	 *
+	 * @returns {Object}
+	 */
+	value: function getLast() {
+		if (Typifier.is('Column', this)) return; // compatibility workaround for 'table-layout' package
+		if (Typifier.isArray(this) && this.length > 0) {
+			return this[this.length - 1];
+		} else if (Typifier.isObject(this) && Object.entries(this).length > 0) {
+			const last = Object.entries(this)[Object.entries(this).length - 1];
+			let a = {};
+			a[last[0]] = last[1];
+			return a;
+		} else {
+			console.warn(`${Typifier.getType(this)}.getLast is not a valid function`);
+		}
+	},
+	enumerable: false
 });
 
 Object.defineProperty(Object.prototype, 'getSample', {
-    /**
-     * Returns a random element of the object
-     *
-     * @example
-     *      { a: 'one', b: 'two', c: 'three'}.getSample() // => { b: 'two' }
-     *
-     * @returns {Object}
-     */
-    value: function getSample() {
-        if(Typifier.is('Column', this)) return; // compatibility workaround for 'table-layout' package
-        if (Typifier.isArray(this) && this.length > 0) {
-            const random_index = Math.floor(Math.random() * this.length);
-            return this[random_index];
-        } else if (Typifier.isObject(this) && Object.entries(this).length > 0) {
-            const random_index = Math.floor(Math.random() * Object.entries(this).length);
-            const random_el = Object.entries(this)[random_index];
-            let a = {};
-            a[random_el[0]] = random_el[1];
-            return a;
-        } else {
-            console.warn(`${Typifier.getType(this)}.getSample is not a valid function`);
-        }
-    },
-    enumerable: false
+	/**
+	 * Returns a random element of the object
+	 *
+	 * @example
+	 *      { a: 'one', b: 'two', c: 'three'}.getSample() // => { b: 'two' }
+	 *
+	 * @returns {Object}
+	 */
+	value: function getSample() {
+		if (Typifier.is('Column', this)) return; // compatibility workaround for 'table-layout' package
+		if (Typifier.isArray(this) && this.length > 0) {
+			const random_index = Math.floor(Math.random() * this.length);
+			return this[random_index];
+		} else if (Typifier.isObject(this) && Object.entries(this).length > 0) {
+			const random_index = Math.floor(Math.random() * Object.entries(this).length);
+			const random_el = Object.entries(this)[random_index];
+			let a = {};
+			a[random_el[0]] = random_el[1];
+			return a;
+		} else {
+			console.warn(`${Typifier.getType(this)}.getSample is not a valid function`);
+		}
+	},
+	enumerable: false
 });
 
 
 
 
 Object.assign(String.prototype, {
-    /**
-     * Convert all characters inside the string
-     * into lower case
-     *
-     * @example
-     *  'this-isAnExample_string'
-     *  // => 'this-isanexample_string'
-     *
-     * @returns {string}
-     */
-    toDownCase() {
-        return this.toLocaleLowerCase();
-    }
+	/**
+	 * Convert all characters inside the string
+	 * into lower case
+	 *
+	 * @example
+	 *  'this-isAnExample_string'
+	 *  // => 'this-isanexample_string'
+	 *
+	 * @returns {string}
+	 */
+	toDownCase() {
+		return this.toLocaleLowerCase();
+	}
 });
 
 Object.assign(String.prototype, {
-    /**
-     * Convert all characters inside the string
-     * into upper case
-     *
-     * @example conversion
-     *      'this-isAnExample_string' => 'THIS-ISANEXAMPLE_STRING'
-     *
-     * @returns {string}
-     */
-    toUpCase() {
-        return this.toLocaleUpperCase();
-    }
+	/**
+	 * Convert all characters inside the string
+	 * into upper case
+	 *
+	 * @example conversion
+	 *      'this-isAnExample_string' => 'THIS-ISANEXAMPLE_STRING'
+	 *
+	 * @returns {string}
+	 */
+	toUpCase() {
+		return this.toLocaleUpperCase();
+	}
 });
 
 
@@ -2773,39 +2780,39 @@ Object.assign(String.prototype, {
  *
  */
 class RubyNice {
-    /**
-     * Prevent using a method inside the browser
-     */
-    static ensureRunningInNodeJs() {
-        const self = RubyNice;
-        if (!self.isRunningInNodeJs()) {
-            throw new Error(`The used method can only be used when running with node js.`);
-        }
-    }
+	/**
+	 * Prevent using a method inside the browser
+	 */
+	static ensureRunningInNodeJs() {
+		const self = RubyNice;
+		if (!self.isRunningInNodeJs()) {
+			throw new Error(`The used method can only be used when running with node js.`);
+		}
+	}
 
-    static getVersion() {
-        const self = RubyNice;
-        return self._version;
-    }
+	static getVersion() {
+		const self = RubyNice;
+		return self._version;
+	}
 
-    /**
-     * Check if this javascript is running in node js
-     *
-     * @returns {boolean} true if running inside node js (not browser)
-     */
-    static isRunningInNodeJs() {
-        return (typeof module !== 'undefined' && module.exports);
-    }
+	/**
+	 * Check if this javascript is running in node js
+	 *
+	 * @returns {boolean} true if running inside node js (not browser)
+	 */
+	static isRunningInNodeJs() {
+		return (typeof module !== 'undefined' && module.exports);
+	}
 
-    /**
-     * Check if this javascript is running in a browser
-     *
-     * @returns {boolean} true if running inside browser
-     */
-    static isRunningInBrowser() {
-        const self = RubyNice;
-        return !self.isRunningInNodeJs();
-    }
+	/**
+	 * Check if this javascript is running in a browser
+	 *
+	 * @returns {boolean} true if running inside browser
+	 */
+	static isRunningInBrowser() {
+		const self = RubyNice;
+		return !self.isRunningInNodeJs();
+	}
 }
 
 /**
