@@ -4,7 +4,9 @@ const LuckyCase = require('lucky-case');
 const FileNotRetrievedError = require('../src/curly-bracket-parser/custom-errors/file-not-retrieved-error');
 const FilterAlreadyRegisteredError = require('../src/curly-bracket-parser/custom-errors/filter-already-registered-error');
 const InvalidFilterError = require('../src/curly-bracket-parser/custom-errors/invalid-filter-error');
+const InvalidTreeVariableStringError = require('../src/curly-bracket-parser/custom-errors/invalid-tree-variable-string-error');
 const InvalidVariableError = require('../src/curly-bracket-parser/custom-errors/invalid-variable-error');
+const TreeVariableNotFoundError = require('../src/curly-bracket-parser/custom-errors/tree-variable-not-found-error');
 const UnresolvedVariablesError = require('../src/curly-bracket-parser/custom-errors/unresolved-variables-error');
 const VariableAlreadyRegisteredError = require('../src/curly-bracket-parser/custom-errors/variable-already-registered-error');
 
@@ -675,6 +677,62 @@ describe('CurlyBracketParser._isTreeVariableString', function () {
             variables.forEach((val) => {
                 expect(CurlyBracketParser._isTreeVariableString(val)).toEqual(false);
             });
+        });
+        it('detects invalid tree variable strings (by exception)', function () {
+            const variables = [
+              'this_is_not_a_tree',
+              'this.has.two..dots',
+              '.dot.at.the.beginning',
+              'dot.at.the.end.',
+              '.dot.at.the.end.and.begin.',
+              '..',
+              '...',
+              '.',
+            ];
+            variables.forEach((val) => {
+                expect(() => {
+                    CurlyBracketParser._isTreeVariableString(val, { throw_error_on_false: true })
+                }).toThrowError(InvalidTreeVariableStringError);
+            });
+        });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------
+
+describe('CurlyBracketParser._extractTreeVariable', function () {
+    beforeEach(function () {
+    });
+    describe('Check tree variable string', function () {
+        it('can extract valid tree variables', function () {
+            let variables = { test: {}};
+            let values = [];
+            values.push([1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample())
+            values.push([1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample())
+            values.push([1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample())
+            variables.test.one = values[0];
+            variables.test.two = values[1];
+            variables.test.three = values[2];
+            keys = ['test.one','test.two','test.three'];
+            for(let i = 0; i < 3; ++i) {
+                expect(CurlyBracketParser._extractTreeVariable(variables, keys[i])).toEqual(values[i]);
+            }
+        });
+        it('detects not existing tree variables', function () {
+            let variables = { test: {}};
+            let values = [];
+            values.push([1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample())
+            values.push([1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample())
+            values.push([1,"one",false,null,"{{sub_variable}}","{{'SomeString'|snake_case}}"].getSample())
+            variables.test.one = values[0];
+            variables.test.two = values[1];
+            variables.test.three = values[2];
+            keys = ['test.four','test.five','test.six'];
+            for(let i = 0; i < 3; ++i) {
+                expect(() => {
+                    CurlyBracketParser._extractTreeVariable(variables, keys[i]);
+                }).toThrowError(TreeVariableNotFoundError);
+            }
         });
     });
 });
