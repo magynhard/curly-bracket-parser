@@ -589,7 +589,7 @@ class CurlyBracketParser {
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.3.2";
+CurlyBracketParser._version = "1.3.3";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};
