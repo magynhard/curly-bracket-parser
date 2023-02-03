@@ -11,7 +11,7 @@
     "test": "yarn test_browser && yarn test_node",
     "test_node": "yarn jasmine && yarn test_node_imports",
     "test_node_imports": "yarn jasmine spec/imports/curly-bracket-parser-spec.cjs && yarn jasmine spec/imports/curly-bracket-parser-spec.mjs",
-    "test_browser": "yarn build && yarn jasmine-browser-runner runSpecs --browser=chrome",
+    "test_browser": "git stash && yarn build && yarn jasmine-browser-runner runSpecs --browser=chrome && git checkout . && git stash pop",
     "build": "yarn doc && node scripts/build.js",
     "doc": "node ./scripts/doc.js",
     "playground": "node playground.js"
