@@ -1,6 +1,7 @@
 //<!-- MODULE -->//
 if (typeof require === 'function' && typeof module !== 'undefined' && module.exports) {
     // custom errors
+    var CircularReferenceError = require('./custom-errors/circular-reference-error.js');
     var FileNotRetrievedError = require('./custom-errors/file-not-retrieved-error.js');
     var FilterAlreadyRegisteredError = require('./custom-errors/filter-already-registered-error.js');
     var InvalidFilterError = require('./custom-errors/invalid-filter-error.js');
@@ -56,10 +57,19 @@ class CurlyBracketParser {
         }
         options = Object.assign(default_options, options);
         variables = variables || {};
+        const seen = [];
         let result_string = string;
         if (self.isAnyVariableIncluded(string)) {
             while (true) {
+                let circleIndex = 0;
                 for (let string_var of self.variables(result_string)) {
+                    // Check circular references
+                    const string_var_key = string_var + ':' + circleIndex++;
+                    if (seen.indexOf(string_var_key) > -1) {
+                      throw new CircularReferenceError('Circular reference: ' + string_var);
+                    }
+                    seen.push(string_var_key);
+
                     const decoded_var = self.decodeVariable(string_var);
                     const name = !decoded_var.name && decoded_var.name !== 0 ? "''" : decoded_var.name;
                     const filter = decoded_var.filter;
