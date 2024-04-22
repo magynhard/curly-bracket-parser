@@ -61,10 +61,10 @@ class CurlyBracketParser {
         let result_string = string;
         if (self.isAnyVariableIncluded(string)) {
             while (true) {
-                let circleIndex = 0;
+                let circle_index = 0;
                 for (let string_var of self.variables(result_string)) {
-                    // Check circular references
-                    const string_var_key = string_var + ':' + circleIndex++;
+                    // Check for circular references
+                    const string_var_key = string_var + ':' + circle_index++;
                     if (seen.indexOf(string_var_key) > -1) {
                       throw new CircularReferenceError('Circular reference: ' + string_var);
                     }
