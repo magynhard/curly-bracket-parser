@@ -3,8 +3,8 @@
  *
  * Simple parser to replace variables inside templates/strings and files
  *
- * @version 1.3.3
- * @date 2023-02-03T18:27:05.152Z
+ * @version 1.3.5
+ * @date 2024-04-22T14:14:09.498Z
  * @link https://github.com/magynhard/curly-bracket-parser
  * @author Matthäus J. N. Beyrle
  * @copyright Matthäus J. N. Beyrle
@@ -51,10 +51,19 @@ class CurlyBracketParser {
         }
         options = Object.assign(default_options, options);
         variables = variables || {};
+        const seen = [];
         let result_string = string;
         if (self.isAnyVariableIncluded(string)) {
             while (true) {
+                let circle_index = 0;
                 for (let string_var of self.variables(result_string)) {
+                    // Check for circular references
+                    const string_var_key = string_var + ':' + circle_index++;
+                    if (seen.indexOf(string_var_key) > -1) {
+                      throw new CircularReferenceError('Circular reference: ' + string_var);
+                    }
+                    seen.push(string_var_key);
+
                     const decoded_var = self.decodeVariable(string_var);
                     const name = !decoded_var.name && decoded_var.name !== 0 ? "''" : decoded_var.name;
                     const filter = decoded_var.filter;
@@ -584,7 +593,7 @@ class CurlyBracketParser {
  * @type {string}
  * @private
  */
-CurlyBracketParser._version = "1.3.3";
+CurlyBracketParser._version = "1.3.5";
 
 CurlyBracketParser.registered_filters = {};
 CurlyBracketParser.registered_default_vars = {};

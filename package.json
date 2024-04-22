@@ -1,6 +1,6 @@
 {
   "name": "curly-bracket-parser",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Simple parser to replace variables inside templates/strings and files for node js and browser.",
   "exports": {
     ".": "./src/curly-bracket-parser/curly-bracket-parser.js",
