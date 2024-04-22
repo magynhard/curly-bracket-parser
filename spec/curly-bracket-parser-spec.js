@@ -493,18 +493,18 @@ describe('CurlyBracketParser.parse', function () {
     });
     describe('Using same reference variables in one line', function () {
         it('Same reference in one line', function () {
-            const circularMap = {
-                callmeok: ' {{ok}}+{{ok}} ',
+            const circular_map = {
+                call_me_ok: ' {{ok}}+{{ok}} ',
                 ok: 'OK'
             }
             console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
-            expect(CurlyBracketParser.parse(circularMap.callmeok, circularMap, 'throw')).toEqual(' OK+OK ')
+            expect(CurlyBracketParser.parse(circular_map.call_me_ok, circular_map, 'throw')).toEqual(' OK+OK ')
         });
     });
 
     describe('Using circular reference variables', function () {
         it('Circular reference', function () {
-            const circularMap = {
+            const circular_map = {
                 callme: '{{callme}}',
                 callmetoo: 'Inside {{callmetoo}} block',
                 callmetoo2: 'Inside {{callmetoo2}} {{callmetoo2}} block',
@@ -514,19 +514,19 @@ describe('CurlyBracketParser.parse', function () {
             }
             console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
             expect(() => {
-                CurlyBracketParser.parse(circularMap.callme, circularMap, 'throw')
+                CurlyBracketParser.parse(circular_map.callme, circular_map, 'throw')
             }).toThrowError(CircularReferenceError);
             expect(() => {
-                CurlyBracketParser.parse(circularMap.pointerto, circularMap, 'throw')
+                CurlyBracketParser.parse(circular_map.pointerto, circular_map, 'throw')
             }).toThrowError(CircularReferenceError);
             expect(() => {
-                CurlyBracketParser.parse(circularMap.callmetoo, circularMap, 'throw')
+                CurlyBracketParser.parse(circular_map.callmetoo, circular_map, 'throw')
             }).toThrowError(CircularReferenceError);
             expect(() => {
-                CurlyBracketParser.parse(circularMap.callmetoo2, circularMap, 'throw')
+                CurlyBracketParser.parse(circular_map.callmetoo2, circular_map, 'throw')
             }).toThrowError(CircularReferenceError);
             expect(() => {
-                CurlyBracketParser.parse(circularMap.ping, circularMap, 'throw')
+                CurlyBracketParser.parse(circular_map.ping, circular_map, 'throw')
             }).toThrowError(CircularReferenceError);
         });
     });
