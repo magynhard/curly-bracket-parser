@@ -1,6 +1,7 @@
 const CurlyBracketParser = require('../src/curly-bracket-parser/curly-bracket-parser.js');
 const LuckyCase = require('lucky-case');
 
+const CircularReferenceError = require('../src/curly-bracket-parser/custom-errors/circular-reference-error.js');
 const FileNotRetrievedError = require('../src/curly-bracket-parser/custom-errors/file-not-retrieved-error');
 const FilterAlreadyRegisteredError = require('../src/curly-bracket-parser/custom-errors/filter-already-registered-error');
 const InvalidFilterError = require('../src/curly-bracket-parser/custom-errors/invalid-filter-error');
@@ -488,6 +489,45 @@ describe('CurlyBracketParser.parse', function () {
             expect(CurlyBracketParser.parse(test_map['this_animal'], test_map)).toEqual('This is a bug');
             console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
             expect(CurlyBracketParser.parse(test_map['which_animal'], test_map)).toEqual('Which animal? This is a bug');
+        });
+    });
+    describe('Using same reference variables in one line', function () {
+        it('Same reference in one line', function () {
+            const circularMap = {
+                callmeok: ' {{ok}}+{{ok}} ',
+                ok: 'OK'
+            }
+            console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
+            expect(CurlyBracketParser.parse(circularMap.callmeok, circularMap, 'throw')).toEqual(' OK+OK ')
+        });
+    });
+
+    describe('Using circular reference variables', function () {
+        it('Circular reference', function () {
+            const circularMap = {
+                callme: '{{callme}}',
+                callmetoo: 'Inside {{callmetoo}} block',
+                callmetoo2: 'Inside {{callmetoo2}} {{callmetoo2}} block',
+                ping: '{{pong}}',
+                pong: '{{ping}}',
+                pointerto: '{{callme}}'
+            }
+            console.log(" If you see this for more than a few seconds and no more (green) dots after this text appear, this test is for sure failing in an endless loop!");
+            expect(() => {
+                CurlyBracketParser.parse(circularMap.callme, circularMap, 'throw')
+            }).toThrowError(CircularReferenceError);
+            expect(() => {
+                CurlyBracketParser.parse(circularMap.pointerto, circularMap, 'throw')
+            }).toThrowError(CircularReferenceError);
+            expect(() => {
+                CurlyBracketParser.parse(circularMap.callmetoo, circularMap, 'throw')
+            }).toThrowError(CircularReferenceError);
+            expect(() => {
+                CurlyBracketParser.parse(circularMap.callmetoo2, circularMap, 'throw')
+            }).toThrowError(CircularReferenceError);
+            expect(() => {
+                CurlyBracketParser.parse(circularMap.ping, circularMap, 'throw')
+            }).toThrowError(CircularReferenceError);
         });
     });
 });
