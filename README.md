@@ -1,5 +1,5 @@
 # curly-bracket-parser
-[![npm package](https://img.shields.io/npm/v/curly-bracket-parser?color=default&style=plastic&logo=npm)](https://www.npmjs.com/package/curly-bracket-parser)
+[![npm package](https://img.shields.io/npm/v/curly-bracket-parser?color=default&style=plastic&logo=npm&logoColor=red)](https://www.npmjs.com/package/curly-bracket-parser)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/magynhard/curly-bracket-parser?color=default&label=browser&logo=javascript&style=plastic)](https://github.com/magynhard/curly-bracket-parser/releases)
 ![downloads](https://img.shields.io/npm/dt/curly-bracket-parser?color=blue&style=plastic)
 [![License: MIT](https://img.shields.io/badge/License-MIT-gold.svg?style=plastic&logo=mit)](LICENSE)
